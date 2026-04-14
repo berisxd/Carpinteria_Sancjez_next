@@ -1,0 +1,420 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Carpintería Sánchez</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" height="44" class="me-2">
+        <span class="brand-name">Carpintería <strong>Sánchez</strong></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Alternar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="#hero">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="#catalogo">Catálogo</a></li>
+          <li class="nav-item"><a class="nav-link" href="#nosotros">Sobre Nosotros</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+
+          {% if user.is_authenticated %}
+            <li class="nav-item"><a class="nav-link" href="#">Hola {{ user.username }}</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a></li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Registrarse</a></li>
+          {% endif %}
+
+          <li class="nav-item d-none d-lg-block ms-3">
+            <a class="btn btn-primary btn-sm position-relative" href="{% url 'carrito' %}">
+              <i class="bi bi-cart3"></i> Carrito
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section id="hero" class="hero-section d-flex align-items-center text-white" style="background: linear-gradient(145deg, rgba(15,62,115,0.95), rgba(18,79,133,0.85)), url('https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=2000&q=60'); background-size: cover; background-position: center; min-height: 70vh; padding-top: 90px;">
+  <div class="container text-center py-6">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="hero-content mx-auto mx-lg-0 text-center text-lg-start">
+          <h1 class="display-5 fw-bold mb-3">Muebles a tu medida — diseño y calidad</h1>
+          <p class="lead mb-4">Creamos espacios únicos con materiales seleccionados y técnicas artesanales. Personaliza tu proyecto con nosotros.</p>
+          <div class="d-flex gap-2 justify-content-center justify-content-lg-start">
+            <a href="#catalogo" class="btn btn-primary btn-lg">Explorar catálogo</a>
+            <a href="{% url 'cotizacion' %}" class="btn btn-outline-light btn-lg">Solicitar presupuesto</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="hero-card shadow-lg rounded overflow-hidden" style="background: rgba(9, 45, 93, 0.80); border: 1px solid rgba(255,255,255,0.4);">
+          <img src="https://images.unsplash.com/photo-1645651964715-d200ce0939cc?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="img-fluid" alt="Taller Carpintería Sánchez"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUESTROS PRODUCTOS -->
+<section id="productos" class="py-6">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Nuestros Productos</h2>
+      <p class="text-muted mb-0">Modelos y medidas disponibles — pide tu cotización</p>
+    </div>
+
+    <div class="row g-3 products-grid">
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card product-card h-100">
+          <img src="{% static 'img/nuestros_productos/escritorio_1.jpg' %}" class="card-img-top" alt="Escritorio con librero" loading="lazy">
+          <div class="card-body py-2">
+            <h6 class="mb-0">Escritorio con Librero</h6>
+            <p class="text-muted small mb-2">Madera de caoba</p>
+            <p class="fw-bold text-primary mb-2">$5,800.00</p>
+            <button class="btn btn-sm btn-primary w-100" onclick="agregarProductoDesdeGaleria('Escritorio con Librero', 5800, '{% static 'img/nuestros_productos/escritorio_1.jpg' %}')">
+              <i class="bi bi-cart-plus"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card product-card h-100">
+          <img src="{% static 'img/nuestros_productos/escritorio_2.jpg' %}" class="card-img-top" alt="Escritorio empresarial" loading="lazy">
+          <div class="card-body py-2">
+            <h6 class="mb-0">Escritorio Empresarial</h6>
+            <p class="text-muted small mb-2">Madera MDF</p>
+            <p class="fw-bold text-primary mb-2">$6,200.00</p>
+            <button class="btn btn-sm btn-primary w-100" onclick="agregarProductoDesdeGaleria('Escritorio Empresarial', 4200, '{% static 'img/nuestros_productos/escritorio_2.jpg' %}')">
+              <i class="bi bi-cart-plus"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card product-card h-100">
+          <img src="{% static 'img/nuestros_productos/escritorio_3.jpg' %}" class="card-img-top" alt="Escritorio básico diseño 1" loading="lazy">
+          <div class="card-body py-2">
+            <h6 class="mb-0">Escritorio Básico — Diseño 1</h6>
+            <p class="text-muted small mb-2">Madera de pino</p>
+            <p class="fw-bold text-primary mb-2">$2,800.00</p>
+            <button class="btn btn-sm btn-primary w-100" onclick="agregarProductoDesdeGaleria('Escritorio Básico — Diseño 1', 2200, '{% static 'img/nuestros_productos/escritorio_3.jpg' %}')">
+              <i class="bi bi-cart-plus"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card product-card h-100">
+          <img src="{% static 'img/nuestros_productos/escritorio_4.jpg' %}" class="card-img-top" alt="Escritorio con 2 cajones" loading="lazy">
+          <div class="card-body py-2">
+            <h6 class="mb-0">Escritorio con 2 Cajones</h6>
+            <p class="text-muted small mb-2">Madera MDF + Cajones</p>
+            <p class="fw-bold text-primary mb-2">$4s,800.00</p>
+            <button class="btn btn-sm btn-primary w-100" onclick="agregarProductoDesdeGaleria('Escritorio con 2 Cajones', 2800, '{% static 'img/nuestros_productos/escritorio_4.jpg' %}')">
+              <i class="bi bi-cart-plus"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card product-card h-100">
+          <img src="{% static 'img/nuestros_productos/escritorio_5.jpg' %}" class="card-img-top" alt="Escritorio básico diseño 2" loading="lazy">
+          <div class="card-body py-2">
+            <h6 class="mb-0">Escritorio Básico — Diseño 2</h6>
+            <p class="text-muted small mb-2">Madera de pino</p>
+            <p class="fw-bold text-primary mb-2">$2,700.00</p>
+            <button class="btn btn-sm btn-primary w-100" onclick="agregarProductoDesdeGaleria('Escritorio Básico — Diseño 2', 2100, '{% static 'img/nuestros_productos/escritorio_5.jpg' %}')">
+              <i class="bi bi-cart-plus"></i> Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CATÁLOGO / SERVICIOS -->
+<section id="catalogo" class="py-6 bg-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Catálogo</h2>
+      <p class="text-muted mb-0">Explora nuestras líneas de muebles y proyectos personalizados</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Item -->
+      <div class="col-sm-6 col-md-4">
+        <article class="card card-service h-100">
+          <div class="card-img-top-wrapper">
+            <img src="https://plus.unsplash.com/premium_photo-1683141179507-734e6157ddba?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzd8fGNvY2luYXMlMjBpbnRlZ3JhbGVzfGVufDB8fDB8fHww" class="card-img-top" alt="Cocinas integrales de madera" loading="lazy">
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Cocinas Integrales</h5>
+            <p class="card-text">Diseños ergonómicos y materiales resistentes para tu cocina.</p>
+            <a href="{% url 'categoria' 'cocinas-integrales' %}" class="stretched-link">Ver más</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-sm-6 col-md-4">
+        <article class="card card-service h-100">
+          <div class="card-img-top-wrapper">
+            <img src="https://images.unsplash.com/photo-1640357154220-9775b0f31dec?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="Closets y armarios de madera" loading="lazy">
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Closets y Armarios</h5>
+            <p class="card-text">Soluciones a medida para optimizar almacenamiento.</p>
+            <a href="{% url 'categoria' 'closets' %}" class="stretched-link">Ver más</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-sm-6 col-md-4">
+        <article class="card card-service h-100">
+          <div class="card-img-top-wrapper">
+            <img src="https://media.istockphoto.com/id/871381408/es/foto/colecci%C3%B3n-de-puertas-de-madera-diferentes-aislados-en-blanco.webp?a=1&b=1&s=612x612&w=0&k=20&c=1ObK4sgLy9x00s6fUDYEhXnIJLW0_0Kye7Yn1UGNrLM=" class="card-img-top" alt="Puertas de madera personalizadas" loading="lazy">
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Puertas</h5>
+            <p class="card-text">Puertas interiores y exteriores con acabados personalizados.</p>
+            <a href="{% url 'categoria' 'puertas' %}" class="stretched-link">Ver más</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-sm-6 col-md-4">
+        <article class="card card-service h-100">
+          <div class="card-img-top-wrapper">
+            <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=60" class="card-img-top" alt="Muebles personalizados de madera" loading="lazy">
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Muebles Personalizados</h5>
+            <p class="card-text">Proyectos únicos según tu espacio y estilo.</p>
+            <a href="{% url 'categoria' 'muebles-personalizados' %}" class="stretched-link">Ver más</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="col-sm-6 col-md-4">
+        <article class="card card-service h-100">
+          <div class="card-img-top-wrapper">
+            <img src="https://images.unsplash.com/photo-1615974679548-2fcfd4699f62?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzR8fGNhcnBpbnRlcm98ZW58MHx8MHx8fDA%3D" class="card-img-top" alt="Instalación y montaje profesional" loading="lazy">
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">Instalación y montaje</h5>
+            <p class="card-text">Montaje profesional y asesoría en sitio.</p>
+            <a href="{% url 'categoria' 'instalacion-montaje' %}" class="stretched-link">Ver más</a>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE NOSOTROS -->
+<section id="nosotros" class="py-6">
+  <div class="container">
+    <h2 class="fw-bold text-center mb-4">Sobre Nosotros</h2>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card p-4 shadow-sm">
+          <h5 class="mb-2">Nuestra historia</h5>
+          <p>Carpintería Sánchez nace de la pasión por la madera y el oficio. Desde 1995 creamos muebles que combinan tradición y diseño moderno.</p>
+          <hr>
+          <h5 class="mb-2">Misión</h5>
+          <p>Ofrecer soluciones de mobiliario personalizadas con calidad, sostenibilidad y atención cercana al cliente.</p>
+          <hr>
+          <h5 class="mb-2">Visión</h5>
+          <p>Ser referente local en diseño y fabricación de muebles a medida, innovando en técnicas y materiales.</p>
+          <hr>
+          <h5 class="mb-2">Valores</h5>
+          <ul class="list-unstyled mb-0">
+            <li>• Calidad artesanal</li>
+            <li>• Respeto por el material</li>
+            <li>• Transparencia y compromiso</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="gallery-grid">
+          <img src="https://plus.unsplash.com/premium_photo-1677700640793-f494649f8ac5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGNhcnBpbnRlcm98ZW58MHx8MHx8fDA%3D" class="img-fluid rounded shadow" alt="Taller de carpintería">
+          <img src="https://images.unsplash.com/photo-1497219055242-93359eeed651?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fGNhcnBpbnRlcm98ZW58MHx8MHx8fDA%3D" class="img-fluid rounded shadow" alt="Trabajo en taller">
+          <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=500&auto=format&fit=crop&q=60" class="img-fluid rounded shadow" alt="Herramientas de carpintería">
+          <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=500&auto=format&fit=crop&q=60" class="img-fluid rounded shadow" alt="Muebles hechos a medida">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto" class="py-6 bg-light">
+  <div class="container">
+    <h2 class="fw-bold text-center mb-4">Contacto</h2>
+    <div class="row justify-content-center">
+      <div class="col-md-4">
+        <div class="card p-3 mb-3 shadow-sm">
+          <h5 class="fw-bold">Contacto</h5>
+          <p class="mb-1"><i class="bi bi-telephone-fill"></i> <a href="tel:+522461581146">Tlaxcala (246) 158 1146</a></p>
+          <p class="mb-1"><i class="bi bi-whatsapp"></i> <a href="https://wa.me/522461581146" target="_blank" rel="noopener">WhatsApp</a></p>
+          <p class="mb-1"><i class="bi bi-envelope-fill"></i> <a href="mailto:juanyahelsanchezflores5@gmail.com">juanyahelsanchezflores5@gmail.com</a></p>
+          <p class="mb-1"><i class="bi bi-envelope-fill"></i> <a href="mailto:zacg00@hotmail.com">zacg00@hotmail.com</a></p>
+          <hr>
+          <h6 class="mb-1">Dirección</h6>
+          <address class="mb-0">
+            Carpintería Sánchez Tepeyanco<br>
+            Privada Progreso No.12<br>
+            San Cosme Atlamaxac, Tepeyanco, Tlaxcala
+          </address>
+        </div>
+      </div>
+      <div class="col-md-8">
+          {% if messages %}
+          <div class="mb-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <form method="post" class="card p-4 shadow-sm">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                <input name="nombre" class="form-control" placeholder="Tu nombre" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Teléfono / Email</label>
+                <input name="contacto" class="form-control" placeholder="Teléfono o email" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Mensaje</label>
+                <textarea name="mensaje" class="form-control" rows="4" placeholder="Cuéntanos sobre tu proyecto" required></textarea>
+              </div>
+              <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+              </div>
+            </div>
+          </form>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-4 bg-white border-top">
+  <div class="container d-md-flex justify-content-between align-items-center">
+    <div>
+      <div class="text-muted">© <strong>Carpintería Sánchez</strong> — Hecho a mano</div>
+      <div class="text-muted small">Carpintería Sánchez Tepeyanco — Privada Progreso No.12, San Cosme Atlamaxac, Tepeyanco, Tlaxcala</div>
+    </div>
+    <div class="mt-2 mt-md-0 text-end">
+      <div class="small text-muted">Tlaxcala: <a href="tel:+522461581146">(246) 158 1146</a></div>
+      <div class="small text-muted">Email: <a href="mailto:juanyahelsanchezflores5@gmail.com">juanyahelsanchezflores5@gmail.com</a></div>
+      <div class="small text-muted">Email2: <a href="mailto:zacg00@hotmail.com">zacg00@hotmail.com</a></div>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal para ver producto -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="productModalImg" src="" alt="" class="img-fluid rounded">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/app.js' %}"></script>
+<script>
+// limpiar carrito automáticamente si hay mensaje de pedido o pago exitoso
+window.addEventListener('DOMContentLoaded', () => {
+  const alerts = Array.from(document.querySelectorAll('.alert-success'));
+  const shouldClear = alerts.some(a => /pedido|pago/i.test(a.textContent));
+  if (shouldClear) {
+    localStorage.removeItem('carrito');
+  }
+});
+
+// Actualizar contador del carrito
+function actualizarContadorCarrito() {
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+  const badge = document.getElementById('cart-count');
+  if (badge) {
+    badge.textContent = total;
+  }
+}
+
+// Agregar producto desde la galería de "Nuestros Productos"
+function agregarProductoDesdeGaleria(nombre, precio, imagen) {
+  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  
+  // Generar un ID único basado en el nombre
+  const id = 'prod_' + nombre.replace(/\s+/g, '_').toLowerCase();
+  
+  const item = {
+    id: id,
+    nombre: nombre,
+    precio: parseFloat(precio),
+    cantidad: 1,
+    imagen: imagen,
+    fecha_agregado: new Date().toISOString()
+  };
+  
+  const itemExistente = carrito.find(p => p.id === id);
+  
+  if (itemExistente) {
+    itemExistente.cantidad += 1;
+    alert(`✓ Se agregó otra unidad de "${nombre}" al carrito`);
+  } else {
+    carrito.push(item);
+    alert(`✓ "${nombre}" fue agregado al carrito`);
+  }
+  
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+  actualizarContadorCarrito();
+}
+
+// Actualizar al cargar la página
+document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
+
+// Escuchar cambios en localStorage (para otro tab/ventana)
+window.addEventListener('storage', actualizarContadorCarrito);
+</script>
+</body>
+</html>

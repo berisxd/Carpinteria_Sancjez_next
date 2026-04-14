@@ -1,0 +1,193 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{{ producto.nombre }} — Carpintería Sánchez</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" height="44" class="me-2">
+        <span class="brand-name">Carpintería <strong>Sánchez</strong></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Alternar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#catalogo">Catálogo</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#nosotros">Sobre Nosotros</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#contacto">Contacto</a></li>
+          <li class="nav-item d-none d-lg-block ms-3">
+            <a class="btn btn-primary btn-sm position-relative" href="{% url 'carrito' %}">
+              <i class="bi bi-cart3"></i> Carrito
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- BREADCRUMB -->
+<section class="py-3 bg-light">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'categoria' producto.categoria %}">{{ producto.get_categoria_display }}</a></li>
+        <li class="breadcrumb-item active">{{ producto.nombre }}</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<!-- DETALLE PRODUCTO -->
+<section class="py-6">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+      <!-- Imagen -->
+      <div class="col-lg-6">
+        <div class="card shadow-lg rounded overflow-hidden">
+          <img src="{{ producto.imagen }}" class="img-fluid" alt="{{ producto.nombre }}" style="width: 100%; height: 500px; object-fit: cover;">
+        </div>
+      </div>
+
+      <!-- Información -->
+      <div class="col-lg-6">
+        <h1 class="display-6 fw-bold mb-2">{{ producto.nombre }}</h1>
+        <p class="lead text-muted mb-4">{{ producto.get_categoria_display }}</p>
+
+        <!-- Precio -->
+        <div class="card p-4 mb-4" style="background-color: #f8f9fa; border: 2px solid var(--brand);">
+          <h3 class="mb-0" style="color: var(--brand); font-size: 2.5rem; font-weight: 700;">
+            ${{ producto.precio|floatformat:2 }}
+          </h3>
+          <p class="text-muted mb-0">Precio disponible — consulta ofertas especiales</p>
+        </div>
+
+        <!-- Descripción -->
+        <div class="mb-4">
+          <h5 class="fw-bold mb-3">Descripción</h5>
+          <p class="lead">{{ producto.descripcion }}</p>
+        </div>
+
+        <!-- Materiales -->
+        <div class="card p-4 mb-4" style="background-color: #f0f7ff; border-left: 4px solid var(--brand);">
+          <h5 class="fw-bold mb-2">Materiales y Características</h5>
+          <p class="mb-0" style="white-space: pre-wrap; line-height: 1.8;">{{ producto.materiales }}</p>
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-grid gap-2 gap-md-3">
+          <button class="btn btn-primary btn-lg" onclick="agregarAlCarrito({{ producto.id }}, '{{ producto.nombre }}', {{ producto.precio }})">
+            <i class="bi bi-cart-plus"></i> Agregar al carrito
+          </button>
+          <a href="{% url 'home' %}#contacto" class="btn btn-outline-primary btn-lg">
+            <i class="bi bi-chat-dots"></i> Solicitar información
+          </a>
+          <a href="{% url 'categoria' producto.categoria %}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Volver a la categoría
+          </a>
+        </div>
+
+        <!-- Info de contacto -->
+        <div class="alert alert-info mt-4" role="alert">
+          <h6 class="fw-bold mb-2">¿Preguntas sobre este producto?</h6>
+          <p class="mb-1"><strong>WhatsApp:</strong> <a href="https://wa.me/522461581146" target="_blank">+52 (246) 158 1146</a></p>
+          <p class="mb-0"><strong>Email:</strong> <a href="mailto:juanyahelsanchezflores5@gmail.com">juanyahelsanchezflores5@gmail.com</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos relacionados -->
+    <hr class="my-6">
+    <div class="mt-6">
+      <h3 class="fw-bold mb-4">Otros productos en esta categoría</h3>
+      <!-- Aquí irían más productos de la misma categoría -->
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-4 bg-white border-top mt-5">
+  <div class="container d-md-flex justify-content-between align-items-center">
+    <div>
+      <div class="text-muted">© <strong>Carpintería Sánchez</strong> — Hecho a mano</div>
+      <div class="text-muted small">Carpintería Sánchez Tepeyanco — Privada Progreso No.12, San Cosme Atlamaxac, Tepeyanco, Tlaxcala</div>
+    </div>
+    <div class="mt-2 mt-md-0 text-end">
+      <div class="small text-muted">Tlaxcala: <a href="tel:+522461581146">(246) 158 1146</a></div>
+      <div class="small text-muted">Email: <a href="mailto:juanyahelsanchezflores5@gmail.com">juanyahelsanchezflores5@gmail.com</a></div>
+    </div>
+  </div>
+</footer>
+
+<script> 
+function agregarAlCarrito(id, nombre, precio) {
+  // Obtener el carrito actual del localStorage
+  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  
+  // Obtener la imagen del producto del DOM
+  const imagenElement = document.querySelector('.card img');
+  const imagen = imagenElement ? imagenElement.src : 'https://via.placeholder.com/100';
+  
+  // Crear el item del carrito
+  const item = {
+    id: id,
+    nombre: nombre,
+    precio: parseFloat(precio),
+    cantidad: 1,
+    imagen: imagen,
+    fecha_agregado: new Date().toISOString()
+  };
+  
+  // Verificar si el producto ya está en el carrito
+  const itemExistente = carrito.find(p => p.id === id);
+  
+  if (itemExistente) {
+    itemExistente.cantidad += 1;
+    alert(`✓ Se agregó otra unidad de "${nombre}" al carrito`);
+  } else {
+    carrito.push(item);
+    alert(`✓ "${nombre}" fue agregado al carrito`);
+  }
+  
+  // Guardar el carrito actualizado
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+  
+  // Actualizar el contador del carrito (si existe)
+  actualizarContadorCarrito();
+}
+
+function actualizarContadorCarrito() {
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+  const badge = document.getElementById('cart-count');
+  if (badge) {
+    badge.textContent = total;
+  }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Actualizar al cargar la página
+document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
+
+// Escuchar cambios en localStorage (para otro tab/ventana)
+window.addEventListener('storage', actualizarContadorCarrito);
+</script>
+</body>
+</html>
