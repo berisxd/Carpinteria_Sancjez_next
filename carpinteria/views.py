@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.db import OperationalError, ProgrammingError, DatabaseError
 from django.core.paginator import Paginator
 
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, EmailOrUsernameAuthenticationForm
 import json
 from .models import Contacto, Categoria, Producto, Pedido, Cotizacion
 from .payment_simulator import simulate_payment
@@ -309,6 +309,7 @@ def pedido_confirmacion(request, pedido_id):
 
 class RoleBasedLoginView(LoginView):
     template_name = 'login.html'
+    form_class = EmailOrUsernameAuthenticationForm
     redirect_authenticated_user = True
 
     def dispatch(self, request, *args, **kwargs):
