@@ -4,6 +4,7 @@ from django.contrib import messages
 import logging
 logger = logging.getLogger(__name__)
 from io import BytesIO
+import os
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -11,8 +12,11 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse
 from django.db import OperationalError, ProgrammingError, DatabaseError
 from django.core.paginator import Paginator
+from django.conf import settings
 from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 
 from .forms import CustomUserCreationForm, EmailOrUsernameAuthenticationForm
 import json
@@ -335,52 +339,173 @@ def descargar_ticket_pdf(request, pedido_id):
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
-    y = height - 50
+    margin = 42
+    y = height - margin
 
-    def write_line(text, x=50, size=11, leading=18, bold=False):
+    brand = colors.HexColor('#0f3e73')
+    brand_light = colors.HexColor('#e9f1f8')
+    accent = colors.HexColor('#d97706')
+    text_dark = colors.HexColor('#1f2937')
+    muted = colors.HexColor('#6b7280')
+
+    def ensure_space(required_height=30):
         nonlocal y
-        if y < 70:
+        if y - required_height < margin:
             pdf.showPage()
-            y = height - 50
-        font_name = 'Helvetica-Bold' if bold else 'Helvetica'
-        pdf.setFont(font_name, size)
-        pdf.drawString(x, y, str(text))
-        y -= leading
+            y = height - margin
+
+    def draw_section_title(title):
+        nonlocal y
+        ensure_space(28)
+        pdf.setFillColor(brand_light)
+        pdf.roundRect(margin, y - 18, width - (margin * 2), 20, 6, fill=1, stroke=0)
+        pdf.setFillColor(brand)
+        pdf.setFont('Helvetica-Bold', 11)
+        pdf.drawString(margin + 10, y - 5, title)
+        y -= 30
+
+    def draw_label_value(label, value, x, width_available, line_gap=16):
+        nonlocal y
+        text = f'{label}: {value}'
+        pdf.setFont('Helvetica', 10)
+        pdf.setFillColor(text_dark)
+        parts = []
+        current = ''
+        for word in str(text).split():
+            candidate = f'{current} {word}'.strip()
+            if pdf.stringWidth(candidate, 'Helvetica', 10) <= width_available:
+                current = candidate
+            else:
+                if current:
+                    parts.append(current)
+                current = word
+        if current:
+            parts.append(current)
+        for part in parts:
+            ensure_space(line_gap)
+            pdf.drawString(x, y, part)
+            y -= line_gap
+
+    def draw_status_stamp(label):
+        stamp_width = 120
+        stamp_height = 34
+        x = width - margin - stamp_width
+        stamp_color = accent if label.upper() == 'PENDIENTE' else brand
+        pdf.saveState()
+        pdf.setStrokeColor(stamp_color)
+        pdf.setFillColor(colors.white)
+        pdf.setLineWidth(2)
+        pdf.roundRect(x, y - 8, stamp_width, stamp_height, 8, fill=1, stroke=1)
+        pdf.setFillColor(stamp_color)
+        pdf.setFont('Helvetica-Bold', 15)
+        pdf.drawCentredString(x + (stamp_width / 2), y + 5, label.upper())
+        pdf.restoreState()
 
     pdf.setTitle(f'Ticket Pedido {pedido.id}')
 
-    write_line('Carpinteria Sanchez', size=18, leading=24, bold=True)
-    write_line('Ticket de pago', size=14, leading=22, bold=True)
-    write_line(f'Folio: #{pedido.id}', bold=True)
-    write_line(f'Fecha: {pedido.created_at.strftime("%d/%m/%Y %H:%M") if pedido.created_at else ""}')
-    write_line(f'Metodo de pago: {pedido.get_metodo_pago_display()}')
-    write_line(f'Estado: {pedido.get_estado_display()}')
-    y -= 8
+    pdf.setFillColor(brand)
+    pdf.rect(0, height - 110, width, 110, fill=1, stroke=0)
 
-    write_line('Datos del cliente', size=13, leading=22, bold=True)
-    write_line(f'Nombre: {pedido.nombre_destinatario}')
-    write_line(f'Email: {pedido.email}')
-    write_line(f'Telefono: {pedido.telefono}')
-    write_line(f'Direccion: {pedido.direccion}')
-    write_line(f'Ciudad: {pedido.ciudad} {pedido.codigo_postal}')
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo.png')
+    if os.path.exists(logo_path):
+        try:
+            pdf.drawImage(ImageReader(logo_path), margin, height - 92, width=52, height=52, mask='auto')
+        except Exception:
+            pass
+
+    pdf.setFillColor(colors.white)
+    pdf.setFont('Helvetica-Bold', 21)
+    pdf.drawString(margin + 64, height - 56, 'Carpinteria Sanchez')
+    pdf.setFont('Helvetica', 10)
+    pdf.drawString(margin + 64, height - 74, 'Privada Progreso No. 12, San Cosme Atlamaxac, Tepeyanco, Tlaxcala')
+    pdf.drawString(margin + 64, height - 89, 'Tel. (246) 158 1146  |  juanyahelsanchezflores5@gmail.com')
+
+    y = height - 140
+    pdf.setFillColor(text_dark)
+    pdf.setFont('Helvetica-Bold', 18)
+    pdf.drawString(margin, y, 'Ticket de pago')
+    pdf.setFont('Helvetica', 10)
+    pdf.setFillColor(muted)
+    pdf.drawString(margin, y - 16, f'Folio #{pedido.id}  |  Generado {pedido.created_at.strftime("%d/%m/%Y %H:%M") if pedido.created_at else ""}')
+    draw_status_stamp(pedido.get_estado_display())
+    y -= 42
+
+    draw_section_title('Datos del cliente')
+    left_x = margin + 10
+    right_x = width / 2 + 10
+    original_y = y
+    draw_label_value('Nombre', pedido.nombre_destinatario, left_x, (width / 2) - 60)
+    draw_label_value('Email', pedido.email, left_x, (width / 2) - 60)
+    draw_label_value('Telefono', pedido.telefono, left_x, (width / 2) - 60)
+    left_end_y = y
+
+    y = original_y
+    draw_label_value('Direccion', pedido.direccion, right_x, (width / 2) - 60)
+    draw_label_value('Ciudad', f'{pedido.ciudad} {pedido.codigo_postal}', right_x, (width / 2) - 60)
     if pedido.referencia:
-        write_line(f'Referencia: {pedido.referencia}')
-    y -= 8
+        draw_label_value('Referencia', pedido.referencia, right_x, (width / 2) - 60)
+    right_end_y = y
+    y = min(left_end_y, right_end_y) - 8
 
-    write_line('Productos', size=13, leading=22, bold=True)
-    for item in productos:
-        write_line(f'{item.get("nombre", "Producto")} x{item.get("cantidad", 0)}', x=55, bold=True)
-        write_line(
-            f'Precio: ${item.get("precio", 0):.2f}    Subtotal: ${item.get("subtotal", 0):.2f}',
-            x=70,
-        )
+    draw_section_title('Detalle de productos')
+    ensure_space(40)
+    table_x = margin
+    table_width = width - (margin * 2)
+    row_height = 22
+    col_positions = [table_x + 10, table_x + 270, table_x + 350, table_x + 450]
 
-    y -= 8
-    write_line(f'Total a pagar: ${float(pedido.total):.2f}', size=13, leading=22, bold=True)
+    pdf.setFillColor(brand)
+    pdf.roundRect(table_x, y - 16, table_width, 22, 6, fill=1, stroke=0)
+    pdf.setFillColor(colors.white)
+    pdf.setFont('Helvetica-Bold', 10)
+    pdf.drawString(col_positions[0], y - 2, 'Producto')
+    pdf.drawString(col_positions[1], y - 2, 'Cantidad')
+    pdf.drawString(col_positions[2], y - 2, 'Precio')
+    pdf.drawString(col_positions[3], y - 2, 'Subtotal')
+    y -= 26
 
-    if pedido.metodo_pago == 'ticket_tienda':
-        write_line('Presenta este ticket en la carpinteria para completar el pago fisico.', leading=20)
-        write_line('El pedido permanecera en pendiente hasta que el administrador lo confirme.', leading=20)
+    for index, item in enumerate(productos, start=1):
+        ensure_space(row_height + 8)
+        if index % 2 == 1:
+            pdf.setFillColor(colors.HexColor('#f8fafc'))
+            pdf.rect(table_x, y - 14, table_width, row_height, fill=1, stroke=0)
+        pdf.setFillColor(text_dark)
+        pdf.setFont('Helvetica', 10)
+        product_name = str(item.get('nombre', 'Producto'))[:42]
+        pdf.drawString(col_positions[0], y, product_name)
+        pdf.drawRightString(col_positions[1] + 40, y, str(item.get('cantidad', 0)))
+        pdf.drawRightString(col_positions[2] + 55, y, f'${item.get("precio", 0):.2f}')
+        pdf.drawRightString(col_positions[3] + 65, y, f'${item.get("subtotal", 0):.2f}')
+        y -= row_height
+
+    ensure_space(60)
+    pdf.setStrokeColor(colors.HexColor('#d1d5db'))
+    pdf.line(table_x, y + 6, table_x + table_width, y + 6)
+    y -= 10
+    pdf.setFont('Helvetica', 11)
+    pdf.setFillColor(text_dark)
+    pdf.drawRightString(table_x + table_width - 120, y, 'Total a pagar:')
+    pdf.setFont('Helvetica-Bold', 16)
+    pdf.setFillColor(brand)
+    pdf.drawRightString(table_x + table_width, y, f'${float(pedido.total):.2f}')
+    y -= 28
+
+    draw_section_title('Instrucciones')
+    pdf.setFillColor(text_dark)
+    pdf.setFont('Helvetica', 10)
+    instructions = [
+        'Presenta este ticket en la carpinteria para completar el pago fisico.',
+        'El pedido permanecera en pendiente hasta que el administrador confirme el pago.',
+        f'Conserva tu folio #{pedido.id} para cualquier aclaracion.',
+    ]
+    for instruction in instructions:
+        ensure_space(18)
+        pdf.drawString(margin + 14, y, f'- {instruction}')
+        y -= 18
+
+    pdf.setFillColor(muted)
+    pdf.setFont('Helvetica', 8)
+    pdf.drawCentredString(width / 2, 24, 'Documento generado automaticamente por Carpinteria Sanchez')
 
     pdf.showPage()
     pdf.save()
