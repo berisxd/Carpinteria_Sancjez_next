@@ -355,7 +355,17 @@ function procesarCheckout() {
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
       body: formData
     })
-    .then(r => r.json())
+    .then(async (r) => {
+      const contentType = r.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        return r.json();
+      }
+      // Fallback when server returns HTML (e.g. middleware/proxy errors)
+      return {
+        status: 'error',
+        message: 'Respuesta inesperada del servidor. Verifica tus datos e inténtalo nuevamente.'
+      };
+    })
     .then(data => {
       if (data.status === 'ok') {
         if (metodo.value === 'ticket_tienda') {
@@ -385,7 +395,7 @@ function procesarCheckout() {
       btn.innerHTML = '<i class="bi bi-arrow-right"></i> Continuar con el pago';
       infoPago.classList.remove('alert-info');
       infoPago.classList.add('alert-danger');
-      infoPagoText.textContent = 'Error de conexión. Inténtalo de nuevo.';
+      infoPagoText.textContent = 'No se pudo conectar con el servidor. Revisa tu internet y vuelve a intentar.';
     });
     return;
   }

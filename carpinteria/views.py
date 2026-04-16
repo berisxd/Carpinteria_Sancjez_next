@@ -122,6 +122,7 @@ def carrito(request):
 
 def checkout(request):
     if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         # valores enviados (se rellenarán con valores de simulación si hacen falta)
         nombre = request.POST.get('nombre', '').strip()
         email = request.POST.get('email', '').strip()
@@ -141,6 +142,8 @@ def checkout(request):
 
         # manejo específico de simulaciones
         if simulacion == 'failure':
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Pago simulado fallido. Permanece en el checkout.'}, status=400)
             messages.error(request, 'Pago simulado fallido. Permanece en el checkout.')
             # volver a mostrar el formulario con los datos ingresados
             return render(request, 'checkout.html', {
@@ -167,6 +170,8 @@ def checkout(request):
 
         # validación de campos obligatorios solo para pagos reales
         if simulacion != 'success' and not all([nombre, email, telefono, direccion, ciudad, codigo_postal, metodo_pago, total]):
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Por favor completa todos los campos requeridos.'}, status=400)
             messages.error(request, 'Por favor completa todos los campos requeridos.')
             return render(request, 'checkout.html', {
                 'nombre': nombre,
