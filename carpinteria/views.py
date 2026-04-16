@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib import messages
+import logging
+logger = logging.getLogger(__name__)
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -12,6 +15,17 @@ from .forms import CustomUserCreationForm
 import json
 from .models import Contacto, Categoria, Producto, Pedido, Cotizacion
 from .payment_simulator import simulate_payment
+
+
+def healthz(request):
+    try:
+        from django.conf import settings
+        slugs = list(Categoria.objects.order_by('slug').values_list('slug', flat=True))
+        prods = Producto.objects.count()
+        db_engine = settings.DATABASES['default'].get('ENGINE', '')
+        return JsonResponse({'ok': True, 'engine': db_engine, 'categoria_slugs': slugs, 'productos': prods})
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=500)
 
 
 def home(request):
@@ -62,16 +76,18 @@ def cotizacion(request):
 
 
 def categoria(request, categoria):
-    # búsqueda por categoría slug (dinámica)
     try:
         categoria_obj = Categoria.objects.get(slug=categoria)
     except Categoria.DoesNotExist:
+        logger.error('categoria_not_found slug=%r db_slugs=%r', categoria,
+                     list(Categoria.objects.values_list('slug', flat=True)))
         return render(request, 'categoria.html', {
             'categoria': categoria,
             'titulo_categoria': 'Categoría no encontrada',
             'productos': [],
         })
-    except (OperationalError, ProgrammingError, DatabaseError):
+    except Exception as exc:
+        logger.error('categoria_exception slug=%r exc=%r', categoria, exc)
         messages.error(request, 'Servicio temporalmente no disponible. Intenta nuevamente en unos minutos.')
         return render(request, 'categoria.html', {
             'categoria': categoria,
