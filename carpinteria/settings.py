@@ -109,6 +109,11 @@ DATABASE_URL = _pick_database_url()
 
 if DATABASE_URL:
     default_db = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
+    parsed_db_url = urlparse(DATABASE_URL)
+    print(
+        "DB_SELECTED engine=%s host=%s"
+        % (default_db.get('ENGINE', ''), (parsed_db_url.hostname or ''))
+    )
 else:
     default_db = {
         'ENGINE': 'django.db.backends.sqlite3',
