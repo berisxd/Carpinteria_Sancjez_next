@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: carpinteria-app
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: python manage.py migrate && python manage.py ensure_admin
+    startCommand: gunicorn carpinteria.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DJANGO_SECRET_KEY
+        sync: false
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

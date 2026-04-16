@@ -8,6 +8,7 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.db import OperationalError, ProgrammingError
 from django.core.paginator import Paginator
 
 
@@ -262,21 +263,33 @@ def checkout(request):
 
 
 def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Do NOT log the user in automatically. Inform and redirect to login.
-            messages.success(request, 'Registro exitoso. Por favor inicia sesión.')
-            # Preserve 'next' parameter if present so login can redirect afterwards
-            next_url = request.GET.get('next') or request.POST.get('next')
-            if next_url:
-                return redirect(f"/login/?next={next_url}")
-            return redirect('login')
-        else:
+    try:
+        if request.method == 'POST':
+            form = CustomUserCreationForm(request.POST)
+            if form.is_valid():
+                form.save()
+                # Do NOT log the user in automatically. Inform and redirect to login.
+                messages.success(request, 'Registro exitoso. Por favor inicia sesión.')
+                # Preserve 'next' parameter if present so login can redirect afterwards
+                next_url = request.GET.get('next') or request.POST.get('next')
+                if next_url:
+                    return redirect(f"/login/?next={next_url}")
+                return redirect('login')
             messages.error(request, 'Por favor corrige los errores en el formulario.')
-    else:
+        else:
+            form = CustomUserCreationForm()
+    except (OperationalError, ProgrammingError):
         form = CustomUserCreationForm()
+        messages.error(
+            request,
+            'Servicio temporalmente no disponible. Intenta nuevamente en unos minutos.'
+        )
+    except Exception:
+        form = CustomUserCreationForm()
+        messages.error(
+            request,
+            'No fue posible procesar el registro en este momento. Intenta nuevamente.'
+        )
 
     return render(request, 'register.html', {'form': form})
 
@@ -305,6 +318,22 @@ def pedido_confirmacion(request, pedido_id):
 class RoleBasedLoginView(LoginView):
     template_name = 'login.html'
     redirect_authenticated_user = True
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except (OperationalError, ProgrammingError):
+            messages.error(
+                request,
+                'Servicio temporalmente no disponible. Intenta nuevamente en unos minutos.'
+            )
+            return render(request, self.template_name, status=503)
+        except Exception:
+            messages.error(
+                request,
+                'No fue posible iniciar sesión en este momento. Intenta nuevamente.'
+            )
+            return render(request, self.template_name, status=503)
 
     def get_success_url(self):
         user = self.request.user

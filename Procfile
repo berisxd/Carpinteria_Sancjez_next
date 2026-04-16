@@ -1,1 +1,0 @@
-web: gunicorn carpinteria.wsgi --log-file -
