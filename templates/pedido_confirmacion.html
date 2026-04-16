@@ -164,6 +164,9 @@
             </button>
           </div>
           <div class="card-body">
+            <div class="alert alert-info small">
+              El cuadro de impresión se abrirá automáticamente para que puedas guardar este ticket como PDF o imprimirlo.
+            </div>
             <div class="row g-3">
               <div class="col-md-6">
                 <p class="mb-1"><strong>Folio:</strong> #{{ pedido.id }}</p>
@@ -280,6 +283,18 @@ function actualizarContadorCarrito() {
 
 document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
 window.addEventListener('storage', actualizarContadorCarrito);
+
+{% if pedido.metodo_pago == 'ticket_tienda' %}
+document.addEventListener('DOMContentLoaded', () => {
+  const printKey = 'ticket-printed-{{ pedido.id }}';
+  if (!sessionStorage.getItem(printKey)) {
+    sessionStorage.setItem(printKey, '1');
+    setTimeout(() => {
+      window.print();
+    }, 600);
+  }
+});
+{% endif %}
 
 // Limpiar el carrito al confirmar el pedido
 localStorage.removeItem('carrito');

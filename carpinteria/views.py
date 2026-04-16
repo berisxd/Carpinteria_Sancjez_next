@@ -189,6 +189,14 @@ def checkout(request):
                 productos_json=productos_json,
                 estado='pendiente'
             )
+            logger.info(
+                'pedido_creado id=%s metodo=%s estado=%s email=%s total=%s',
+                pedido.id,
+                pedido.metodo_pago,
+                pedido.estado,
+                pedido.email,
+                pedido.total,
+            )
 
             # actualizar profile si se solicitó y está logueado
             guardar = request.POST.get('guardar_datos')
@@ -685,6 +693,10 @@ def admin_panel(request):
 
     # Pedidos pendientes
     pedidos_pendientes = Pedido.objects.filter(estado='pendiente')
+    ticket_pendientes = Pedido.objects.filter(
+        estado='pendiente',
+        metodo_pago='ticket_tienda'
+    ).order_by('-created_at')
 
     # Cotizaciones de los últimos 7 días
     hace_7_dias = timezone.now() - timedelta(days=7)
@@ -710,6 +722,7 @@ def admin_panel(request):
         'estados': Pedido.ESTADOS,
         # Métricas adicionales
         'pedidos_pendientes': pedidos_pendientes,
+        'ticket_pendientes': ticket_pendientes,
         'cotizaciones_recientes': cotizaciones_recientes,
         'usuarios_nuevos': usuarios_nuevos,
         'productos_deshabilitados': productos_deshabilitados,
