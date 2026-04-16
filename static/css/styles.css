@@ -378,6 +378,9 @@ footer a{color:var(--muted); text-decoration:none}
 footer{
 	background: transparent;
 }
+
+.register-side,
+.login-side{
 	background:linear-gradient(180deg, rgba(31,77,122,0.82), rgba(25,44,85,0.82)), url('../img/foto_carpinteria/carpinteria.jpg');
 	background-size:cover;
 	background-position:center;
@@ -425,6 +428,7 @@ footer{
 	font-weight:800;
 	margin-bottom:1rem;
 	line-height:1.05;
+	color:#f6fbff;
 }
 
 .register-side p,
