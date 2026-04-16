@@ -234,9 +234,14 @@ def checkout(request):
 
             # flujo normal: mostrar confirmación del pedido
             messages.success(request, f'¡Pedido creado exitosamente! Número de pedido: #{pedido.id}')
+            redirect_url = reverse('pedido_confirmacion', kwargs={'pedido_id': pedido.id})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'ok', 'pedido_id': pedido.id, 'redirect': redirect_url})
             return redirect('pedido_confirmacion', pedido_id=pedido.id)
 
         except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
             messages.error(request, f'Error al procesar el pedido: {str(e)}')
             return render(request, 'checkout.html', {
                 'nombre': nombre,

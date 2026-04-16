@@ -170,8 +170,8 @@
           </div>
           <div class="card-body">
             <a id="ticketPdfLink" href="{% url 'descargar_ticket_pdf' pedido.id %}" hidden aria-hidden="true">Descargar ticket PDF</a>
-            <div class="alert alert-info small">
-              La descarga del PDF se iniciará automáticamente. Si no comienza, usa el botón "Descargar PDF".
+            <div class="alert alert-success small">
+              <i class="bi bi-check-circle me-1"></i> La descarga del ticket PDF se inició automáticamente. Si no lo recibiste, usa el botón "Descargar PDF".
             </div>
             <div class="row g-3">
               <div class="col-md-6">
@@ -297,20 +297,7 @@ function actualizarContadorCarrito() {
 document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
 window.addEventListener('storage', actualizarContadorCarrito);
 
-document.addEventListener('DOMContentLoaded', () => {
-  const ticketPdfLink = document.getElementById('ticketPdfLink');
-  if (!ticketPdfLink) {
-    return;
-  }
-
-  const downloadKey = `ticket-pdf-downloaded-${ticketPdfLink.getAttribute('href')}`;
-  if (!sessionStorage.getItem(downloadKey)) {
-    sessionStorage.setItem(downloadKey, '1');
-    setTimeout(() => {
-      descargarTicketPdf(ticketPdfLink.href);
-    }, 600);
-  }
-});
+// PDF download is triggered automatically at checkout. The button above allows re-downloading.
 
 // Limpiar el carrito al confirmar el pedido
 localStorage.removeItem('carrito');

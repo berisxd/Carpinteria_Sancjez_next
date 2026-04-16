@@ -321,24 +321,66 @@ function cargarResumenCompra() {
 
 function procesarCheckout() {
   const metodo = document.querySelector('input[name="metodo_pago"]:checked');
-  
+
   if (!metodo) {
     alert('Por favor selecciona un método de pago');
     return;
   }
-  
+
   const infoPago = document.getElementById('info-pago');
   const infoPagoText = document.getElementById('info-pago-text');
-  
+
   const mensajes = {
     'tarjeta': 'Serás redirigido a una pasarela segura de pago con tarjeta.',
     'mercado_pago': 'Serás redirigido a Mercado Pago para completar tu pago.',
-    'ticket_tienda': 'Se generará tu ticket con los datos del pedido para pagar físicamente en la carpintería.'
+    'ticket_tienda': 'Generando tu ticket de pago...'
   };
-  
+
   infoPagoText.textContent = mensajes[metodo.value];
   infoPago.style.display = 'block';
-  
+
+  if (metodo.value === 'ticket_tienda') {
+    // Submit via AJAX so we can trigger the PDF download before navigating away
+    const btn = document.querySelector('button[onclick="procesarCheckout()"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generando ticket...';
+
+    const formData = new FormData(document.getElementById('checkoutForm'));
+    fetch(window.location.pathname, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        // Trigger PDF download immediately
+        const a = document.createElement('a');
+        a.href = '/pedido/' + data.pedido_id + '/ticket.pdf';
+        a.download = 'ticket-pedido-' + data.pedido_id + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        // Redirect to confirmation page after a brief moment
+        setTimeout(() => { window.location.href = data.redirect; }, 800);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-arrow-right"></i> Continuar con el pago';
+        infoPago.classList.remove('alert-info');
+        infoPago.classList.add('alert-danger');
+        infoPagoText.textContent = 'Error: ' + (data.message || 'No se pudo procesar el pedido. Inténtalo de nuevo.');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-arrow-right"></i> Continuar con el pago';
+      infoPago.classList.remove('alert-info');
+      infoPago.classList.add('alert-danger');
+      infoPagoText.textContent = 'Error de conexión. Inténtalo de nuevo.';
+    });
+    return;
+  }
+
   setTimeout(() => {
     document.getElementById('checkoutForm').submit();
   }, 1500);
