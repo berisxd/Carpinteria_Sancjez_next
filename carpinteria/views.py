@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.urls import reverse
-from django.db import OperationalError, ProgrammingError
+from django.db import OperationalError, ProgrammingError, DatabaseError
 from django.core.paginator import Paginator
 
 from .forms import CustomUserCreationForm
@@ -62,19 +62,22 @@ def cotizacion(request):
 
 
 def categoria(request, categoria):
-    # búsqueda por categoria slug (dinámica)
-    categoria_obj = None
+    # búsqueda por categoría slug (dinámica)
     try:
         categoria_obj = Categoria.objects.get(slug=categoria)
-    except Exception:
-        pass
-
-    if not categoria_obj:
+    except Categoria.DoesNotExist:
         return render(request, 'categoria.html', {
             'categoria': categoria,
             'titulo_categoria': 'Categoría no encontrada',
             'productos': [],
         })
+    except (OperationalError, ProgrammingError, DatabaseError):
+        messages.error(request, 'Servicio temporalmente no disponible. Intenta nuevamente en unos minutos.')
+        return render(request, 'categoria.html', {
+            'categoria': categoria,
+            'titulo_categoria': 'Servicio temporalmente no disponible',
+            'productos': [],
+        }, status=503)
 
     productos = Producto.objects.filter(categoria=categoria_obj, habilitado=True)
 
