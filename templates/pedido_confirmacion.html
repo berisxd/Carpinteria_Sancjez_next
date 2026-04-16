@@ -75,7 +75,7 @@
                     <td>{{ item.nombre }}</td>
                     <td class="text-end">{{ item.cantidad }}</td>
                     <td class="text-end">${{ item.precio|floatformat:2 }}</td>
-                    <td class="text-end fw-bold">${{ item.precio|floatformat:2 }}</td>
+                    <td class="text-end fw-bold">${{ item.subtotal|floatformat:2 }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -142,12 +142,75 @@
               <p class="mt-2 mb-0">
                 Tu pedido está en estado: <strong>{{ pedido.get_estado_display }}</strong>
               </p>
+              {% if pedido.metodo_pago == 'ticket_tienda' %}
+              <p class="mt-2 mb-0 text-muted small">
+                Presenta tu ticket en la carpintería para realizar el pago físico y confirmar tu pedido.
+              </p>
+              {% else %}
               <p class="mt-2 mb-0 text-muted small">
                 Procederemos con el procesamiento del pago. Recibirás un correo de confirmación en {{ pedido.email }}
               </p>
+              {% endif %}
             </div>
           </div>
         </div>
+
+        {% if pedido.metodo_pago == 'ticket_tienda' %}
+        <div class="card shadow-sm mb-4" id="ticket-pago">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-receipt"></i> Ticket de Pago en Carpintería</h5>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">
+              <i class="bi bi-printer"></i> Imprimir ticket
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Folio:</strong> #{{ pedido.id }}</p>
+                <p class="mb-1"><strong>Fecha:</strong> {{ pedido.created_at|date:"d/m/Y H:i" }}</p>
+                <p class="mb-1"><strong>Cliente:</strong> {{ pedido.nombre_destinatario }}</p>
+                <p class="mb-0"><strong>Teléfono:</strong> {{ pedido.telefono }}</p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Email:</strong> {{ pedido.email }}</p>
+                <p class="mb-1"><strong>Dirección:</strong> {{ pedido.direccion }}</p>
+                <p class="mb-1"><strong>Ciudad:</strong> {{ pedido.ciudad }} {{ pedido.codigo_postal }}</p>
+                <p class="mb-0"><strong>Estado:</strong> {{ pedido.get_estado_display }}</p>
+              </div>
+            </div>
+
+            <hr>
+
+            <h6 class="fw-bold mb-2">Productos a pagar</h6>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-2">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th class="text-end">Cantidad</th>
+                    <th class="text-end">Precio</th>
+                    <th class="text-end">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in productos %}
+                  <tr>
+                    <td>{{ item.nombre }}</td>
+                    <td class="text-end">{{ item.cantidad }}</td>
+                    <td class="text-end">${{ item.precio|floatformat:2 }}</td>
+                    <td class="text-end">${{ item.subtotal|floatformat:2 }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="text-end">
+              <p class="mb-0"><strong>Total a pagar en tienda: ${{ pedido.total|floatformat:2 }}</strong></p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
         
         <!-- Información importante -->
         <div class="alert alert-info" role="alert">
@@ -155,6 +218,9 @@
           <ul class="mb-0 ps-3">
             <li>Recibirás un correo de confirmación en los próximos minutos</li>
             <li>Tu pedido será procesado y enviado según el método de pago seleccionado</li>
+            {% if pedido.metodo_pago == 'ticket_tienda' %}
+            <li>Tu pedido queda en <strong>pendiente</strong> hasta que el administrador confirme el pago en tienda</li>
+            {% endif %}
             <li>Para consultas sobre tu pedido, contacta con nosotros al (246) 158 1146</li>
             <li>Conserva tu número de pedido <strong>#{{ pedido.id }}</strong> para futuras referencias</li>
           </ul>

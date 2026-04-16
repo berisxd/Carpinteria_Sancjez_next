@@ -128,6 +128,10 @@ def checkout(request):
         productos_json = request.POST.get('productos_json', '[]')
         simulacion = request.POST.get('simulacion', '')
 
+        # El pago físico en carpintería siempre queda en pendiente y no usa simulación.
+        if metodo_pago == 'ticket_tienda':
+            simulacion = ''
+
         # manejo específico de simulaciones
         if simulacion == 'failure':
             messages.error(request, 'Pago simulado fallido. Permanece en el checkout.')
@@ -298,6 +302,14 @@ def pedido_confirmacion(request, pedido_id):
     pedido = get_object_or_404(Pedido, pk=pedido_id)
     try:
         productos = json.loads(pedido.productos_json)
+        for item in productos:
+            try:
+                precio = float(item.get('precio', 0))
+                cantidad = int(item.get('cantidad', 0))
+            except (TypeError, ValueError):
+                precio = 0
+                cantidad = 0
+            item['subtotal'] = precio * cantidad
     except:
         productos = []
     

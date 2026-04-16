@@ -159,6 +159,14 @@
                     <small class="d-block text-muted">Tarjeta, transferencia bancaria o efectivo</small>
                   </label>
                 </div>
+
+                <div class="form-check p-3 mb-2" style="background-color: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                  <input class="form-check-input" type="radio" name="metodo_pago" id="pago_ticket_tienda" value="ticket_tienda" required {% if metodo_pago == 'ticket_tienda' %}checked{% endif %}>
+                  <label class="form-check-label w-100 cursor-pointer" for="pago_ticket_tienda">
+                    <strong><i class="bi bi-receipt-cutoff"></i> Pago en Carpintería (Ticket)</strong>
+                    <small class="d-block text-muted">Genera tu ticket y paga físicamente en tienda</small>
+                  </label>
+                </div>
               </div>
               
               <!-- Información de pago según selección -->
@@ -324,8 +332,8 @@ function procesarCheckout() {
   
   const mensajes = {
     'tarjeta': 'Serás redirigido a una pasarela segura de pago con tarjeta.',
-    'paypal': 'Serás redirigido a PayPal para completar tu pago de forma segura.',
-    'mercado_pago': 'Serás redirigido a Mercado Pago para completar tu pago.'
+    'mercado_pago': 'Serás redirigido a Mercado Pago para completar tu pago.',
+    'ticket_tienda': 'Se generará tu ticket con los datos del pedido para pagar físicamente en la carpintería.'
   };
   
   infoPagoText.textContent = mensajes[metodo.value];
@@ -345,8 +353,8 @@ document.querySelectorAll('input[name="metodo_pago"]').forEach(radio => {
     
     const mensajes = {
       'tarjeta': '<strong>Tarjeta de Crédito/Débito:</strong> Tu pago será procesado de forma segura mediante encriptación SSL.',
-      'paypal': '<strong>PayPal:</strong> Iniciarás sesión en tu cuenta de PayPal para confirmar el pago de manera segura.',
-      'mercado_pago': '<strong>Mercado Pago:</strong> Tendrás múltiples opciones de pago incluyendo tarjetas y transferencias bancarias.'
+      'mercado_pago': '<strong>Mercado Pago:</strong> Tendrás múltiples opciones de pago incluyendo tarjetas y transferencias bancarias.',
+      'ticket_tienda': '<strong>Pago en Carpintería (Ticket):</strong> Se creará un ticket con tus datos y productos para liquidar directamente en tienda.'
     };
     
     infoPagoText.innerHTML = mensajes[metodo];

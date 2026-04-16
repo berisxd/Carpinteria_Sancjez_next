@@ -54,6 +54,7 @@ class Pedido(models.Model):
     METODOS_PAGO = [
         ('tarjeta', 'Tarjeta de Crédito/Débito'),
         ('mercado_pago', 'Mercado Pago'),
+        ('ticket_tienda', 'Pago en Carpintería (Ticket)'),
     ]
     
     ESTADOS = [
