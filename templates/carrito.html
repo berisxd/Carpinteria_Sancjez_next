@@ -12,6 +12,38 @@
 </head>
 <body>
 
+<!-- TOAST CONTAINER -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+  <div id="toastCarrito" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-check-circle me-2"></i>
+        <span id="toastMsg"></span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINACIÓN -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        ¿Deseas eliminar <strong id="productoNombre"></strong> del carrito?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- NAVBAR -->
 <header class="sticky-top">
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
@@ -204,14 +236,48 @@ function cambiarCantidad(index, cantidad) {
   }
 }
 
+function mostrarToast(mensaje) {
+  const toastMsg = document.getElementById('toastMsg');
+  const toastEl = document.getElementById('toastCarrito');
+  toastMsg.textContent = mensaje;
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+let indexAEliminar = null;
+
 function eliminarDelCarrito(index) {
-  if (confirm('¿Deseas eliminar este producto del carrito?')) {
-    const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-    carrito.splice(index, 1);
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-    cargarCarrito();
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  
+  if (index >= 0 && index < carrito.length) {
+    indexAEliminar = index;
+    const productoNombre = carrito[index].nombre;
+    
+    document.getElementById('productoNombre').textContent = productoNombre;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalEliminar'));
+    modal.show();
   }
 }
+
+// Confirmar eliminación del producto
+document.getElementById('btnConfirmarEliminar')?.addEventListener('click', function() {
+  if (indexAEliminar !== null) {
+    const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+    const nombreProducto = carrito[indexAEliminar].nombre;
+    
+    carrito.splice(indexAEliminar, 1);
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+    
+    mostrarToast(`"${nombreProducto}" fue eliminado del carrito`);
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminar'));
+    modal.hide();
+    
+    cargarCarrito();
+    indexAEliminar = null;
+  }
+});
 
 // Cargar carrito al abrir la página
 document.addEventListener('DOMContentLoaded', cargarCarrito);
