@@ -1,0 +1,149 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{{ titulo }} — Carpintería Sánchez</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" height="44" class="me-2">
+        <span class="brand-name">Carpintería <strong>Sánchez</strong></span>
+      </a>
+      <div class="ms-auto d-none d-lg-block">
+        <a class="btn btn-primary btn-sm position-relative" href="{% url 'carrito' %}">
+          <i class="bi bi-cart3"></i> Carrito
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<section class="py-6">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        <!-- Resultado principal -->
+        <div class="text-center mb-5">
+          <div class="mb-3" style="font-size: 4rem; color: var(--bs-{{ color }});">
+            <i class="bi {{ icono }}"></i>
+          </div>
+          <h1 class="fw-bold mb-2">{{ titulo }}</h1>
+          <p class="lead text-muted">{{ mensaje }}</p>
+        </div>
+
+        <!-- Tarjeta de pedido -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Resumen del pedido</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <p class="mb-1 text-muted small">Número de pedido</p>
+                <p class="fw-bold fs-5 mb-0" style="color: var(--brand);">#{{ pedido.id }}</p>
+              </div>
+              <div class="col-sm-6">
+                <p class="mb-1 text-muted small">Fecha</p>
+                <p class="fw-bold mb-0">{{ pedido.created_at|date:"d/m/Y H:i" }}</p>
+              </div>
+              <div class="col-sm-6">
+                <p class="mb-1 text-muted small">Cliente</p>
+                <p class="fw-bold mb-0">{{ pedido.nombre_destinatario }}</p>
+              </div>
+              <div class="col-sm-6">
+                <p class="mb-1 text-muted small">Total</p>
+                <p class="fw-bold mb-0 fs-5">${{ pedido.total|floatformat:2 }}</p>
+              </div>
+              <div class="col-sm-6">
+                <p class="mb-1 text-muted small">Método de pago</p>
+                <p class="fw-bold mb-0">{{ pedido.get_metodo_pago_display }}</p>
+              </div>
+              <div class="col-sm-6">
+                <p class="mb-1 text-muted small">Estado</p>
+                {% if pedido.estado == 'confirmado' %}
+                  <span class="badge bg-success fs-6">{{ pedido.get_estado_display }}</span>
+                {% elif pedido.estado == 'cancelado' %}
+                  <span class="badge bg-danger fs-6">{{ pedido.get_estado_display }}</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark fs-6">{{ pedido.get_estado_display }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones según resultado -->
+        <div class="d-grid gap-2">
+          {% if resultado == 'exitoso' %}
+            <a href="{% url 'pedido_confirmacion' pedido.id %}" class="btn btn-success btn-lg">
+              <i class="bi bi-eye me-2"></i>Ver detalle del pedido
+            </a>
+          {% elif resultado == 'fallido' %}
+            <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg">
+              <i class="bi bi-arrow-repeat me-2"></i>Intentar de nuevo
+            </a>
+          {% else %}
+            <a href="{% url 'pedido_confirmacion' pedido.id %}" class="btn btn-warning btn-lg text-dark">
+              <i class="bi bi-eye me-2"></i>Ver detalle del pedido
+            </a>
+          {% endif %}
+          <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-house me-2"></i>Volver al inicio
+          </a>
+        </div>
+
+        <!-- Información de contacto -->
+        <div class="alert alert-info mt-4 small">
+          <i class="bi bi-info-circle me-1"></i>
+          Para consultas sobre tu pedido <strong>#{{ pedido.id }}</strong>, contáctanos al
+          <a href="https://wa.me/522461581146" target="_blank"><strong>(246) 158 1146</strong></a>
+          o a <a href="mailto:juanyahelsanchezflores5@gmail.com">juanyahelsanchezflores5@gmail.com</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-4 bg-white border-top mt-5">
+  <div class="container d-md-flex justify-content-between align-items-center">
+    <div>
+      <div class="text-muted">© <strong>Carpintería Sánchez</strong> — Hecho a mano</div>
+    </div>
+    <div class="mt-2 mt-md-0 text-end">
+      <div class="small text-muted">Tlaxcala: <a href="tel:+522461581146">(246) 158 1146</a></div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Limpiar carrito si el pago fue exitoso
+{% if resultado == 'exitoso' %}
+localStorage.removeItem('carrito');
+{% endif %}
+
+function actualizarContadorCarrito() {
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+  const badge = document.getElementById('cart-count');
+  if (badge) badge.textContent = total;
+}
+document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
+</script>
+</body>
+</html>

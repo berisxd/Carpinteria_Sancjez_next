@@ -332,18 +332,22 @@ function procesarCheckout() {
 
   const mensajes = {
     'tarjeta': 'Serás redirigido a una pasarela segura de pago con tarjeta.',
-    'mercado_pago': 'Serás redirigido a Mercado Pago para completar tu pago.',
+    'mercado_pago': 'Redirigiendo a Mercado Pago...',
     'ticket_tienda': 'Generando tu ticket de pago...'
   };
 
   infoPagoText.textContent = mensajes[metodo.value];
   infoPago.style.display = 'block';
 
-  if (metodo.value === 'ticket_tienda') {
-    // Submit via AJAX so we can trigger the PDF download before navigating away
+  if (metodo.value === 'ticket_tienda' || metodo.value === 'mercado_pago') {
+    // Submit via AJAX so we can trigger the PDF download (ticket) or redirect to MP before navigating
     const btn = document.querySelector('button[onclick="procesarCheckout()"]');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generando ticket...';
+    const labels = {
+      'ticket_tienda': '<span class="spinner-border spinner-border-sm me-2"></span>Generando ticket...',
+      'mercado_pago':  '<span class="spinner-border spinner-border-sm me-2"></span>Redirigiendo a Mercado Pago...',
+    };
+    btn.innerHTML = labels[metodo.value];
 
     const formData = new FormData(document.getElementById('checkoutForm'));
     fetch(window.location.pathname, {
@@ -354,15 +358,20 @@ function procesarCheckout() {
     .then(r => r.json())
     .then(data => {
       if (data.status === 'ok') {
-        // Trigger PDF download immediately
-        const a = document.createElement('a');
-        a.href = '/pedido/' + data.pedido_id + '/ticket.pdf';
-        a.download = 'ticket-pedido-' + data.pedido_id + '.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        // Redirect to confirmation page after a brief moment
-        setTimeout(() => { window.location.href = data.redirect; }, 800);
+        if (metodo.value === 'ticket_tienda') {
+          // Trigger PDF download immediately
+          const a = document.createElement('a');
+          a.href = '/pedido/' + data.pedido_id + '/ticket.pdf';
+          a.download = 'ticket-pedido-' + data.pedido_id + '.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          // Redirect to confirmation page after a brief moment
+          setTimeout(() => { window.location.href = data.redirect; }, 800);
+        } else {
+          // mercado_pago: redirect straight to MP checkout
+          window.location.href = data.redirect;
+        }
       } else {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-arrow-right"></i> Continuar con el pago';

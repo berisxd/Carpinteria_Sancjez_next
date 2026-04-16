@@ -235,6 +235,14 @@ def checkout(request):
             # flujo normal: mostrar confirmación del pedido
             messages.success(request, f'¡Pedido creado exitosamente! Número de pedido: #{pedido.id}')
             redirect_url = reverse('pedido_confirmacion', kwargs={'pedido_id': pedido.id})
+
+            # Para Mercado Pago, redirigir al checkout de MP
+            if metodo_pago == 'mercado_pago':
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    mp_url = reverse('iniciar_pago_mercadopago', kwargs={'pedido_id': pedido.id})
+                    return JsonResponse({'status': 'ok', 'pedido_id': pedido.id, 'redirect': mp_url})
+                return redirect('iniciar_pago_mercadopago', pedido_id=pedido.id)
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'ok', 'pedido_id': pedido.id, 'redirect': redirect_url})
             return redirect('pedido_confirmacion', pedido_id=pedido.id)
@@ -930,4 +938,205 @@ def admin_panel(request):
         'cotizaciones_recientes': cotizaciones_recientes,
         'usuarios_nuevos': usuarios_nuevos,
         'productos_deshabilitados': productos_deshabilitados,
+    })
+
+
+# ── Mercado Pago ───────────────────────────────────────────────────────────────
+
+def _mp_sdk():
+    """Return an initialized Mercado Pago SDK instance."""
+    import mercadopago
+    return mercadopago.SDK(settings.MP_ACCESS_TOKEN)
+
+
+def iniciar_pago_mercadopago(request, pedido_id):
+    """Create a MP preference and redirect the user to the MP checkout page."""
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+
+    if not settings.MP_ACCESS_TOKEN:
+        messages.error(request, 'El pago con Mercado Pago no está configurado. Contacta al administrador.')
+        return redirect('pedido_confirmacion', pedido_id=pedido.id)
+
+    sdk = _mp_sdk()
+
+    # Build items list from the order
+    productos = _get_productos_pedido(pedido)
+    if productos:
+        items = [
+            {
+                "title": item["nombre"],
+                "quantity": int(item["cantidad"]),
+                "unit_price": float(item["precio"]),
+                "currency_id": "MXN",
+            }
+            for item in productos
+        ]
+    else:
+        items = [
+            {
+                "title": f"Pedido #{pedido.id} — Carpintería Sánchez",
+                "quantity": 1,
+                "unit_price": float(pedido.total),
+                "currency_id": "MXN",
+            }
+        ]
+
+    preference_data = {
+        "items": items,
+        "payer": {
+            "name": pedido.nombre_destinatario,
+            "email": pedido.email,
+            "phone": {"number": pedido.telefono},
+        },
+        "back_urls": {
+            "success": request.build_absolute_uri(
+                reverse('mp_pago_exitoso', kwargs={'pedido_id': pedido.id})
+            ),
+            "failure": request.build_absolute_uri(
+                reverse('mp_pago_fallido', kwargs={'pedido_id': pedido.id})
+            ),
+            "pending": request.build_absolute_uri(
+                reverse('mp_pago_pendiente', kwargs={'pedido_id': pedido.id})
+            ),
+        },
+        "auto_return": "approved",
+        "notification_url": request.build_absolute_uri(reverse('mp_webhook')),
+        "external_reference": str(pedido.id),
+        "statement_descriptor": "Carpinteria Sanchez",
+    }
+
+    try:
+        result = sdk.preference().create(preference_data)
+        response = result.get("response", {})
+
+        if result.get("status") not in (200, 201):
+            logger.error("mp_preference_error pedido=%s response=%s", pedido.id, response)
+            messages.error(request, "No se pudo iniciar el pago con Mercado Pago. Intenta de nuevo.")
+            return redirect('pedido_confirmacion', pedido_id=pedido.id)
+
+        # Use sandbox_init_point when in DEBUG mode, init_point for production
+        init_point = response.get("sandbox_init_point" if settings.DEBUG else "init_point", "")
+        if not init_point:
+            messages.error(request, "Respuesta inválida de Mercado Pago. Intenta de nuevo.")
+            return redirect('pedido_confirmacion', pedido_id=pedido.id)
+
+        logger.info("mp_preference_created pedido=%s preference_id=%s", pedido.id, response.get("id"))
+        return redirect(init_point)
+
+    except Exception as exc:
+        logger.error("mp_preference_exception pedido=%s exc=%s", pedido.id, exc)
+        messages.error(request, "Error al conectar con Mercado Pago. Intenta de nuevo.")
+        return redirect('pedido_confirmacion', pedido_id=pedido.id)
+
+
+def mp_webhook(request):
+    """Receive IPN/webhook notifications from Mercado Pago and update order status."""
+    import hmac, hashlib
+
+    if request.method != "POST":
+        return HttpResponse(status=405)
+
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return HttpResponse(status=400)
+
+    topic = data.get("type") or request.GET.get("topic", "")
+    resource_id = (
+        data.get("data", {}).get("id")
+        or request.GET.get("id")
+    )
+
+    if topic not in ("payment", "merchant_order") or not resource_id:
+        return HttpResponse(status=200)
+
+    if not settings.MP_ACCESS_TOKEN:
+        return HttpResponse(status=200)
+
+    try:
+        sdk = _mp_sdk()
+
+        if topic == "payment":
+            result = sdk.payment().get(resource_id)
+            payment = result.get("response", {})
+            external_ref = payment.get("external_reference")
+            mp_status = payment.get("status")  # approved / pending / rejected / etc.
+        else:
+            result = sdk.merchant_order().get(resource_id)
+            order = result.get("response", {})
+            external_ref = order.get("external_reference")
+            payments = order.get("payments", [])
+            mp_status = payments[0].get("status") if payments else None
+
+        if not external_ref:
+            return HttpResponse(status=200)
+
+        pedido = Pedido.objects.filter(pk=int(external_ref)).first()
+        if not pedido:
+            return HttpResponse(status=200)
+
+        estado_map = {
+            "approved": "confirmado",
+            "pending": "pendiente",
+            "in_process": "pendiente",
+            "rejected": "cancelado",
+            "cancelled": "cancelado",
+            "refunded": "cancelado",
+            "charged_back": "cancelado",
+        }
+        nuevo_estado = estado_map.get(mp_status)
+        if nuevo_estado and pedido.estado != nuevo_estado:
+            pedido.estado = nuevo_estado
+            pedido.save()
+            logger.info("mp_webhook pedido=%s mp_status=%s nuevo_estado=%s", pedido.id, mp_status, nuevo_estado)
+
+    except Exception as exc:
+        logger.error("mp_webhook_exception exc=%s", exc)
+
+    return HttpResponse(status=200)
+
+
+def mp_pago_exitoso(request, pedido_id):
+    """Called by MP after a successful payment."""
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+    # Mark as confirmed if not already updated by webhook
+    if pedido.estado == 'pendiente':
+        pedido.estado = 'confirmado'
+        pedido.save()
+    return render(request, 'mp_resultado.html', {
+        'pedido': pedido,
+        'resultado': 'exitoso',
+        'titulo': '¡Pago realizado con éxito!',
+        'mensaje': 'Tu pago fue procesado correctamente. Recibirás un correo de confirmación en breve.',
+        'icono': 'bi-check-circle-fill',
+        'color': 'success',
+    })
+
+
+def mp_pago_fallido(request, pedido_id):
+    """Called by MP after a failed payment."""
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+    if pedido.estado == 'pendiente':
+        pedido.estado = 'cancelado'
+        pedido.save()
+    return render(request, 'mp_resultado.html', {
+        'pedido': pedido,
+        'resultado': 'fallido',
+        'titulo': 'El pago no pudo completarse',
+        'mensaje': 'Tu pago fue rechazado. Puedes intentarlo de nuevo o elegir otro método de pago.',
+        'icono': 'bi-x-circle-fill',
+        'color': 'danger',
+    })
+
+
+def mp_pago_pendiente(request, pedido_id):
+    """Called by MP when payment is pending (e.g. cash / bank transfer)."""
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+    return render(request, 'mp_resultado.html', {
+        'pedido': pedido,
+        'resultado': 'pendiente',
+        'titulo': 'Pago pendiente de acreditación',
+        'mensaje': 'Tu pago está siendo procesado. Te notificaremos cuando se acredite. Conserva tu número de pedido.',
+        'icono': 'bi-hourglass-split',
+        'color': 'warning',
     })

@@ -180,3 +180,9 @@ LOGGING = {
     },
 }
 
+# ── Mercado Pago ───────────────────────────────────────────────────────────────
+# Set MP_ACCESS_TOKEN and MP_PUBLIC_KEY as environment variables on Render.
+# Use sandbox tokens for testing; production tokens for live payments.
+MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
+MP_PUBLIC_KEY   = os.environ.get('MP_PUBLIC_KEY', '')
+
