@@ -371,7 +371,8 @@ def admin_panel(request):
 
     # manejar acciones del panel
     if request.method == 'POST':
-        action = request.POST.get('action')
+        action = request.POST.get('action', '')
+        logger.info(f"admin_panel POST action={action} user={user.email}")
 
         if action == 'cambiar_estado':
             try:
