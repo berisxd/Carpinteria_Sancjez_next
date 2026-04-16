@@ -53,7 +53,6 @@ class Producto(models.Model):
 class Pedido(models.Model):
     METODOS_PAGO = [
         ('tarjeta', 'Tarjeta de Crédito/Débito'),
-        ('paypal', 'PayPal'),
         ('mercado_pago', 'Mercado Pago'),
     ]
     

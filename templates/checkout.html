@@ -153,14 +153,6 @@
                 </div>
                 
                 <div class="form-check p-3 mb-2" style="background-color: #f8f9fa; border-radius: 8px; cursor: pointer;">
-                  <input class="form-check-input" type="radio" name="metodo_pago" id="pago_paypal" value="paypal" required {% if metodo_pago == 'paypal' %}checked{% endif %}>
-                  <label class="form-check-label w-100 cursor-pointer" for="pago_paypal">
-                    <strong><i class="bi bi-paypal"></i> PayPal</strong>
-                    <small class="d-block text-muted">Pago seguro con tu cuenta de PayPal</small>
-                  </label>
-                </div>
-                
-                <div class="form-check p-3 mb-2" style="background-color: #f8f9fa; border-radius: 8px; cursor: pointer;">
                   <input class="form-check-input" type="radio" name="metodo_pago" id="pago_mercado" value="mercado_pago" required {% if metodo_pago == 'mercado_pago' %}checked{% endif %}>
                   <label class="form-check-label w-100 cursor-pointer" for="pago_mercado">
                     <strong><i class="bi bi-credit-card"></i> Mercado Pago</strong>
