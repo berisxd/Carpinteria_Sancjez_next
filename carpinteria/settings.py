@@ -76,33 +76,16 @@ TEMPLATES = [{
 }]
 
 # Database:
-# - In production, set DATABASE_URL (PostgreSQL/MySQL/etc.).
+# - In production, set DATABASE_URL (PostgreSQL).
 # - If not set, SQLite is used as fallback.
 DATABASE_URL = (
     os.environ.get('DATABASE_URL')
     or os.environ.get('INTERNAL_DATABASE_URL')
     or os.environ.get('EXTERNAL_DATABASE_URL')
 )
-DB_HOST = os.environ.get('DB_HOST')
-DB_NAME = os.environ.get('DB_NAME')
-DB_USER = os.environ.get('DB_USER')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-DB_PORT = os.environ.get('DB_PORT', '3306')
 
 if DATABASE_URL:
     default_db = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
-elif DB_HOST and DB_NAME and DB_USER:
-    default_db = {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
-    }
 else:
     default_db = {
         'ENGINE': 'django.db.backends.sqlite3',

