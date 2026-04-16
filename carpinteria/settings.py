@@ -173,5 +173,29 @@ LOGGING = {
             'propagate': False,
         },
     },
+    'loggers': {
+        'carpinteria': {
+                'loggers': {
+                    'django': {
+                        'handlers': ['console'],
+                        'level': 'ERROR',
+                        'propagate': False,
+                    },
+                    'django.request': {
+                        'handlers': ['console'],
+                        'level': 'ERROR',
+                        'propagate': False,
+                    },
+                    'carpinteria': {
+                        'handlers': ['console'],
+                        'level': 'ERROR',
+                        'propagate': False,
+                    },
+                },
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
 }
 
