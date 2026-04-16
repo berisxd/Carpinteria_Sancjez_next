@@ -79,11 +79,33 @@ TEMPLATES = [{
 # Database:
 # - In production, set DATABASE_URL (PostgreSQL).
 # - If not set, SQLite is used as fallback.
-DATABASE_URL = (
-    os.environ.get('DATABASE_URL')
-    or os.environ.get('INTERNAL_DATABASE_URL')
-    or os.environ.get('EXTERNAL_DATABASE_URL')
-)
+def _is_local_mysql_url(db_url: str) -> bool:
+    parsed = urlparse((db_url or '').strip())
+    scheme = (parsed.scheme or '').split('+')[0].lower()
+    host = (parsed.hostname or '').strip().lower()
+    return scheme in ('mysql', 'mysql2') and host in ('127.0.0.1', 'localhost')
+
+
+def _pick_database_url() -> str:
+    # Prefer Render PostgreSQL URLs and skip known-bad local MySQL URLs.
+    candidates = [
+        os.environ.get('INTERNAL_DATABASE_URL', ''),
+        os.environ.get('EXTERNAL_DATABASE_URL', ''),
+        os.environ.get('DATABASE_URL', ''),
+    ]
+
+    for candidate in candidates:
+        candidate = (candidate or '').strip()
+        if not candidate:
+            continue
+        if _is_local_mysql_url(candidate):
+            continue
+        return candidate
+
+    return ''
+
+
+DATABASE_URL = _pick_database_url()
 
 if DATABASE_URL:
     default_db = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
