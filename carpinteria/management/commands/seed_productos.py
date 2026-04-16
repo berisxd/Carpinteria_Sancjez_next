@@ -104,10 +104,16 @@ class Command(BaseCommand):
         created_count = 0
 
         for item in PRODUCTOS:
+            # Use slug as canonical key to avoid unique conflicts from legacy names.
             categoria, _ = Categoria.objects.get_or_create(
-                nombre=item["categoria"],
-                defaults={"slug": item["slug"]},
+                slug=item["slug"],
+                defaults={"nombre": item["categoria"]},
             )
+
+            # Keep category display name aligned with seed data.
+            if categoria.nombre != item["categoria"]:
+                categoria.nombre = item["categoria"]
+                categoria.save(update_fields=["nombre"])
 
             _, created = Producto.objects.update_or_create(
                 nombre=item["nombre"],
