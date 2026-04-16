@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.db import OperationalError, ProgrammingError, DatabaseError
 from django.core.paginator import Paginator
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -1034,6 +1035,7 @@ def iniciar_pago_mercadopago(request, pedido_id):
         return redirect('pedido_confirmacion', pedido_id=pedido.id)
 
 
+@csrf_exempt
 def mp_webhook(request):
     """Receive IPN/webhook notifications from Mercado Pago and update order status."""
     import hmac, hashlib
