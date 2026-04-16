@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 import logging
 logger = logging.getLogger(__name__)
+from io import BytesIO
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -10,6 +11,8 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse
 from django.db import OperationalError, ProgrammingError, DatabaseError
 from django.core.paginator import Paginator
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 from .forms import CustomUserCreationForm, EmailOrUsernameAuthenticationForm
 import json
@@ -306,20 +309,91 @@ def logout_view(request):
     return redirect('home')
 
 
-def pedido_confirmacion(request, pedido_id):
-    pedido = get_object_or_404(Pedido, pk=pedido_id)
+def _get_productos_pedido(pedido):
     try:
         productos = json.loads(pedido.productos_json)
-        for item in productos:
-            try:
-                precio = float(item.get('precio', 0))
-                cantidad = int(item.get('cantidad', 0))
-            except (TypeError, ValueError):
-                precio = 0
-                cantidad = 0
-            item['subtotal'] = precio * cantidad
-    except:
-        productos = []
+    except Exception:
+        return []
+
+    for item in productos:
+        try:
+            precio = float(item.get('precio', 0))
+            cantidad = int(item.get('cantidad', 0))
+        except (TypeError, ValueError):
+            precio = 0
+            cantidad = 0
+        item['precio'] = precio
+        item['cantidad'] = cantidad
+        item['subtotal'] = precio * cantidad
+    return productos
+
+
+def descargar_ticket_pdf(request, pedido_id):
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+    productos = _get_productos_pedido(pedido)
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    y = height - 50
+
+    def write_line(text, x=50, size=11, leading=18, bold=False):
+        nonlocal y
+        if y < 70:
+            pdf.showPage()
+            y = height - 50
+        font_name = 'Helvetica-Bold' if bold else 'Helvetica'
+        pdf.setFont(font_name, size)
+        pdf.drawString(x, y, str(text))
+        y -= leading
+
+    pdf.setTitle(f'Ticket Pedido {pedido.id}')
+
+    write_line('Carpinteria Sanchez', size=18, leading=24, bold=True)
+    write_line('Ticket de pago', size=14, leading=22, bold=True)
+    write_line(f'Folio: #{pedido.id}', bold=True)
+    write_line(f'Fecha: {pedido.created_at.strftime("%d/%m/%Y %H:%M") if pedido.created_at else ""}')
+    write_line(f'Metodo de pago: {pedido.get_metodo_pago_display()}')
+    write_line(f'Estado: {pedido.get_estado_display()}')
+    y -= 8
+
+    write_line('Datos del cliente', size=13, leading=22, bold=True)
+    write_line(f'Nombre: {pedido.nombre_destinatario}')
+    write_line(f'Email: {pedido.email}')
+    write_line(f'Telefono: {pedido.telefono}')
+    write_line(f'Direccion: {pedido.direccion}')
+    write_line(f'Ciudad: {pedido.ciudad} {pedido.codigo_postal}')
+    if pedido.referencia:
+        write_line(f'Referencia: {pedido.referencia}')
+    y -= 8
+
+    write_line('Productos', size=13, leading=22, bold=True)
+    for item in productos:
+        write_line(f'{item.get("nombre", "Producto")} x{item.get("cantidad", 0)}', x=55, bold=True)
+        write_line(
+            f'Precio: ${item.get("precio", 0):.2f}    Subtotal: ${item.get("subtotal", 0):.2f}',
+            x=70,
+        )
+
+    y -= 8
+    write_line(f'Total a pagar: ${float(pedido.total):.2f}', size=13, leading=22, bold=True)
+
+    if pedido.metodo_pago == 'ticket_tienda':
+        write_line('Presenta este ticket en la carpinteria para completar el pago fisico.', leading=20)
+        write_line('El pedido permanecera en pendiente hasta que el administrador lo confirme.', leading=20)
+
+    pdf.showPage()
+    pdf.save()
+    buffer.seek(0)
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="ticket-pedido-{pedido.id}.pdf"'
+    return response
+
+
+def pedido_confirmacion(request, pedido_id):
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+    productos = _get_productos_pedido(pedido)
     
     return render(request, 'pedido_confirmacion.html', {
         'pedido': pedido,

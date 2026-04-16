@@ -180,6 +180,7 @@
                     <td><span class="badge text-bg-warning">{{ pedido.get_estado_display }}</span></td>
                     <td>
                       <a href="{% url 'pedido_confirmacion' pedido.id %}" class="btn btn-sm btn-outline-primary" target="_blank">Ver ticket</a>
+                      <a href="{% url 'descargar_ticket_pdf' pedido.id %}" class="btn btn-sm btn-primary" target="_blank">PDF</a>
                     </td>
                   </tr>
                   {% endfor %}
@@ -232,6 +233,7 @@
                     <button type="submit" class="btn btn-sm btn-success">Guardar</button>
                   </form>
                   <a href="{% url 'pedido_confirmacion' pedido.id %}" class="btn btn-sm btn-outline-primary ms-1" target="_blank">Ver</a>
+                  <a href="{% url 'descargar_ticket_pdf' pedido.id %}" class="btn btn-sm btn-primary ms-1" target="_blank">PDF</a>
                   <a href="{% url 'simulate_pago' pedido.id %}" class="btn btn-sm btn-warning ms-1">Simular pago</a>
                 </td>
               </tr>
