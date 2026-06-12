@@ -1,53 +1,38 @@
 # Carpinteria Sanchez
 
-Aplicacion Django para catalogo de productos de carpinteria, cotizaciones, pedidos y panel administrativo.
+Proyecto en modo Next.js only.
+
+La aplicacion principal y unica vive en `web-next` con Next.js + Prisma + PostgreSQL.
 
 ## Requisitos
 
-- Python 3.12+
-- PostgreSQL (produccion) o SQLite (desarrollo)
+- Node.js 18+
+- PostgreSQL
 
-## Configuracion rapida local
+## Inicio rapido local
 
-1. Crear entorno virtual:
-   - `python -m venv .venv`
-2. Activar entorno virtual.
-3. Instalar dependencias:
-   - `pip install -r requirements.txt`
-4. Ejecutar migraciones:
-   - `python manage.py migrate`
-5. Crear/actualizar admin por variables de entorno (opcional):
-   - `python manage.py ensure_admin`
-6. Levantar servidor:
-   - `python manage.py runserver`
+1. Entrar a `web-next`.
+2. Instalar dependencias: `npm install`.
+3. Ejecutar en desarrollo: `npm run dev:low`.
+4. Abrir `http://localhost:3000`.
 
-## Variables de entorno importantes
+## Variables de entorno
+
+Definir en `web-next/.env` (o en tu proveedor de hosting):
 
 - `DATABASE_URL`
-- `DJANGO_SECRET_KEY`
-- `DJANGO_DEBUG`
-- `ALLOWED_HOSTS`
-- `ADMIN_EMAIL`
-- `ADMIN_USERNAME`
-- `ADMIN_PASSWORD`
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+- `MP_ACCESS_TOKEN`
 
-## Comandos de mantenimiento
+## Deploy
 
-- Poblar catalogo base:
-  - `python manage.py seed_productos`
-- Revisar productos cargados:
-  - `python manage.py check_productos`
-- Crear un producto de prueba:
-  - `python manage.py create_test_producto`
-- Migrar datos de SQLite a SQL:
-  - `python manage.py migrate_sqlite_to_sql --source db.sqlite3 --flush-target`
+- Render blueprint principal: `render.yaml`
+  - `rootDir: web-next`
+  - build: `npm install && npm run build`
+  - start: `npm run start`
 
-## Estructura del proyecto
+## Referencias
 
-- `carpinteria/`: app principal (modelos, vistas, forms, settings, comandos)
-- `templates/`: vistas HTML
-- `static/`: css/js/imagenes
-- `tests/`: pruebas automatizadas
-- `scripts/`: scripts auxiliares de mantenimiento de assets
-- `Dockerfile`: despliegue por contenedor
-- `render.yaml`: blueprint opcional para Render
+- Setup detallado: `web-next/README_SETUP.md`
+- Plan de migracion: `web-next/MIGRATION_PLAN.md`
