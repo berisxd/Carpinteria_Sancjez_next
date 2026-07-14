@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { AddToCartButton, type MaterialOpcion } from "@/components/cart/AddToCartButton";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { notFound } from "next/navigation";
+import { DescargaDespieceButton } from "@/components/despiece/DescargaDespieceButton";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,37 @@ export default async function ProductoPage({ params }: PageProps) {
   if (!producto || !producto.habilitado) {
     notFound();
   }
+
+  const opcionesMaterial = (() => {
+    try {
+      const parsed = JSON.parse(producto.opcionesMaterial) as unknown;
+      if (!Array.isArray(parsed)) return [] as MaterialOpcion[];
+      return (parsed as unknown[]).map((item): MaterialOpcion => {
+        if (typeof item === "string") return { nombre: item, imagen: "" };
+        const o = item as Record<string, unknown>;
+        return { nombre: String(o.nombre ?? ""), imagen: String(o.imagen ?? "") };
+      }).filter((o) => o.nombre);
+    } catch {
+      return [] as MaterialOpcion[];
+    }
+  })();
+
+  // Check if this product has a cut-list configured
+  const hasDespiece = (() => {
+    try {
+      const parsed = JSON.parse(producto.despieceJson) as unknown;
+      return (
+        !!parsed &&
+        typeof parsed === "object" &&
+        !Array.isArray(parsed) &&
+        "piezas" in parsed &&
+        Array.isArray((parsed as { piezas: unknown }).piezas) &&
+        (parsed as { piezas: unknown[] }).piezas.length > 0
+      );
+    } catch {
+      return false;
+    }
+  })();
 
   // Obtener productos relacionados de la misma categoría
   const relacionados = await prisma.producto.findMany({
@@ -111,6 +143,7 @@ export default async function ProductoPage({ params }: PageProps) {
             </div>
 
             <AddToCartButton
+              opcionesMaterial={opcionesMaterial}
               product={{
                 id: producto.id,
                 nombre: producto.nombre,
@@ -122,6 +155,13 @@ export default async function ProductoPage({ params }: PageProps) {
                 },
               }}
             />
+
+            {hasDespiece && (
+              <DescargaDespieceButton
+                productoId={producto.id}
+                productoNombre={producto.nombre}
+              />
+            )}
           </div>
         </div>
 

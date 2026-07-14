@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { CartFloatingButton } from "@/components/cart/CartFloatingButton";
 import { CartProvider } from "@/components/cart/CartProvider";
+import { WhatsAppButton } from "@/components/site/WhatsAppButton";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,10 +29,13 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <CartProvider>
-          {children}
-          <CartFloatingButton />
-        </CartProvider>
+        <Providers>
+          <CartProvider>
+            {children}
+            <CartFloatingButton />
+            <WhatsAppButton />
+          </CartProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
-import { requireAdminSession } from "@/lib/admin";
+import { requireStaffSession } from "@/lib/admin";
 import {
   getAdminPreference,
   normalizePageSize,
@@ -41,7 +41,7 @@ function productoSortLabel(activeSortBy: ProductoSortBy, activeSortDir: SortDir,
 }
 
 export default async function AdminProductosPage({ searchParams }: PageProps) {
-  const session = await requireAdminSession("/admin/productos");
+  const session = await requireStaffSession("/admin/productos");
   const query = await searchParams;
   const preference = await getAdminPreference(session.user.id);
 
@@ -192,7 +192,7 @@ export default async function AdminProductosPage({ searchParams }: PageProps) {
   async function quickToggleProducto(formData: FormData) {
     "use server";
 
-    await requireAdminSession("/admin/productos");
+    await requireStaffSession("/admin/productos");
     const id = String(formData.get("id") || "");
     const habilitado = formData.get("habilitado") === "true";
     const nextPath = String(formData.get("next") || "/admin/productos");

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
-import { requireAdminSession } from "@/lib/admin";
+import { requireStaffSession } from "@/lib/admin";
 import {
   getAdminPreference,
   normalizePageSize,
@@ -106,7 +106,7 @@ function pedidoSortLabel(activeSortBy: PedidoSortBy, activeSortDir: SortDir, key
 }
 
 export default async function AdminPedidosPage({ searchParams }: PageProps) {
-  const session = await requireAdminSession("/admin/pedidos");
+  const session = await requireStaffSession("/admin/pedidos");
   const query = await searchParams;
   const preference = await getAdminPreference(session.user.id);
 

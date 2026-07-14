@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { requireAdminSession } from "@/lib/admin";
+import { requireStaffSession, isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/pedidos";
+import { AdminAssistantInline } from "@/components/admin/AdminAssistantInline";
 
 function dayLabel(date: Date) {
   return date.toLocaleDateString("es-AR", {
@@ -11,7 +12,8 @@ function dayLabel(date: Date) {
 }
 
 export default async function AdminIndexPage() {
-  await requireAdminSession("/admin");
+  const session = await requireStaffSession("/admin");
+  const esAdmin = isAdmin(session);
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
@@ -23,6 +25,7 @@ export default async function AdminIndexPage() {
     totalProductos,
     productosHabilitados,
     totalCategorias,
+    totalEquipo,
     ultimosPedidos,
     pedidosPorEstado,
     ventasRecientes,
@@ -40,6 +43,7 @@ export default async function AdminIndexPage() {
     prisma.producto.count(),
     prisma.producto.count({ where: { habilitado: true } }),
     prisma.categoria.count(),
+    prisma.user.count({ where: { role: { in: ["ADMIN", "WORKER"] } } }),
     prisma.pedido.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -96,6 +100,10 @@ export default async function AdminIndexPage() {
     },
   ];
 
+  const equipoKpi = esAdmin
+    ? { label: "Equipo", value: String(totalEquipo), hint: "Admins y trabajadores", href: "/admin/usuarios" }
+    : null;
+
   const maxEstado = Math.max(...pedidosPorEstado.map((row) => row._count.estado), 1);
   const estadoChart = pedidosPorEstado
     .map((row) => ({
@@ -140,12 +148,22 @@ export default async function AdminIndexPage() {
             >
               Ver pedidos
             </Link>
-            <Link
-              href="/admin/productos"
-              className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
-            >
-              Gestionar productos
-            </Link>
+            {esAdmin && (
+              <>
+                <Link
+                  href="/admin/productos"
+                  className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
+                >
+                  Productos
+                </Link>
+                <Link
+                  href="/admin/usuarios"
+                  className="rounded-lg border border-sky-700/60 px-4 py-2 text-sm font-semibold text-sky-300 transition hover:border-sky-500 hover:bg-sky-900/20"
+                >
+                  Equipo
+                </Link>
+              </>
+            )}
           </div>
         </header>
 
@@ -162,7 +180,22 @@ export default async function AdminIndexPage() {
               <p className="mt-2 text-xs text-slate-500">{kpi.hint}</p>
             </article>
           ))}
+          {equipoKpi && (
+            <Link
+              href={equipoKpi.href}
+              className="group rounded-2xl border border-sky-800/40 bg-sky-900/10 p-5 shadow-2xl shadow-black/20 transition hover:border-sky-600/60 hover:bg-sky-900/20"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-sky-400/70">
+                {equipoKpi.label}
+              </p>
+              <p className="mt-2 text-2xl font-bold text-sky-300">{equipoKpi.value}</p>
+              <p className="mt-2 text-xs text-sky-500/80">{equipoKpi.hint} →</p>
+            </Link>
+          )}
         </section>
+
+        {/* ── Asistente IA inline ────────────────────────────────── */}
+        <AdminAssistantInline />
 
         <section className="rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl shadow-black/20">
           <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">

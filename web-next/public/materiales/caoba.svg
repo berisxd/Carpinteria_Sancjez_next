@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7D3E2E"/>
+      <stop offset="40%" stop-color="#6A2E20"/>
+      <stop offset="100%" stop-color="#561E14"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" fill="url(#g)"/>
+  <path d="M0,14 C60,12 140,16 200,13" stroke="#3E1208" stroke-width="1.4" fill="none" opacity="0.5"/>
+  <path d="M0,30 C50,28 150,32 200,29" stroke="#4A1A0A" stroke-width="0.7" fill="none" opacity="0.4"/>
+  <path d="M0,50 C70,47 130,53 200,49" stroke="#3E1208" stroke-width="2.0" fill="none" opacity="0.48"/>
+  <path d="M0,66 C55,64 145,68 200,65" stroke="#4A1A0A" stroke-width="0.8" fill="none" opacity="0.38"/>
+  <path d="M0,85 C60,82 140,88 200,84" stroke="#3E1208" stroke-width="1.7" fill="none" opacity="0.48"/>
+  <path d="M0,102 C70,100 130,104 200,101" stroke="#4A1A0A" stroke-width="0.8" fill="none" opacity="0.38"/>
+  <path d="M0,120 C50,118 150,122 200,119" stroke="#3E1208" stroke-width="1.5" fill="none" opacity="0.46"/>
+  <path d="M0,136 C65,134 135,138 200,135" stroke="#4A1A0A" stroke-width="0.7" fill="none" opacity="0.36"/>
+  <!-- ribbon interlocked grain (mahogany characteristic) -->
+  <path d="M30,0 L50,150" stroke="#8B3A22" stroke-width="6" fill="none" opacity="0.08"/>
+  <path d="M70,0 L90,150" stroke="#8B3A22" stroke-width="6" fill="none" opacity="0.06"/>
+  <path d="M120,0 L140,150" stroke="#8B3A22" stroke-width="6" fill="none" opacity="0.07"/>
+  <path d="M160,0 L180,150" stroke="#8B3A22" stroke-width="6" fill="none" opacity="0.06"/>
+</svg>

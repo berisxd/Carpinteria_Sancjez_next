@@ -46,18 +46,18 @@ function LoginPageContent() {
       };
 
       if (callbackUrl) {
-        router.push(callbackUrl);
+        window.location.href = callbackUrl;
         return;
       }
 
-      if (session.user?.role === "ADMIN") {
-        router.push("/admin");
+      if (session.user?.role === "ADMIN" || session.user?.role === "WORKER") {
+        window.location.href = "/admin";
         return;
       }
 
-      router.push("/");
+      window.location.href = "/";
     } catch {
-      router.push(callbackUrl || "/");
+      window.location.href = callbackUrl || "/";
     }
   }
 

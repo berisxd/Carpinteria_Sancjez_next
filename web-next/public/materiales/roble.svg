@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B08050"/>
+      <stop offset="40%" stop-color="#936840"/>
+      <stop offset="100%" stop-color="#7C5430"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" fill="url(#g)"/>
+  <path d="M0,10 C55,8 145,12 200,9" stroke="#5E3C1C" stroke-width="1.5" fill="none" opacity="0.48"/>
+  <path d="M0,24 C65,22 135,26 200,23" stroke="#6A4422" stroke-width="0.7" fill="none" opacity="0.38"/>
+  <path d="M0,40 C50,37 150,43 200,39" stroke="#5E3C1C" stroke-width="2.0" fill="none" opacity="0.44"/>
+  <path d="M0,57 C70,55 130,59 200,56" stroke="#6A4422" stroke-width="0.9" fill="none" opacity="0.38"/>
+  <path d="M0,75 C55,72 145,78 200,74" stroke="#5E3C1C" stroke-width="1.6" fill="none" opacity="0.44"/>
+  <path d="M0,92 C65,90 135,94 200,91" stroke="#6A4422" stroke-width="0.8" fill="none" opacity="0.36"/>
+  <path d="M0,110 C50,108 150,112 200,109" stroke="#5E3C1C" stroke-width="1.8" fill="none" opacity="0.44"/>
+  <path d="M0,126 C70,124 130,128 200,125" stroke="#6A4422" stroke-width="0.8" fill="none" opacity="0.36"/>
+  <path d="M0,142 C55,140 145,144 200,141" stroke="#5E3C1C" stroke-width="1.2" fill="none" opacity="0.4"/>
+  <!-- characteristic oak ray fleck -->
+  <path d="M90,60 L110,95" stroke="#8C6438" stroke-width="3" fill="none" opacity="0.25"/>
+  <path d="M95,58 L115,90" stroke="#8C6438" stroke-width="2" fill="none" opacity="0.18"/>
+</svg>

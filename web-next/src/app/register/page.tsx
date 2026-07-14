@@ -53,11 +53,10 @@ export default function RegisterPage() {
     await signIn("credentials", {
       email,
       password,
-      redirect: true,
-      callbackUrl: "/",
+      redirect: false,
     });
 
-    router.push("/");
+    window.location.href = "/";
   }
 
   return (

@@ -9,7 +9,8 @@ import {
 } from "react";
 
 export interface CartItem {
-  id: string;
+  id: string;                    // product ID (for API lookup)
+  cartKey: string;               // unique cart key: `${id}` or `${id}::${material}`
   nombre: string;
   imagen: string;
   precio: number;
@@ -17,6 +18,7 @@ export interface CartItem {
     nombre: string;
     slug: string;
   };
+  materialSeleccionado?: string;
   quantity: number;
 }
 
@@ -28,8 +30,8 @@ interface CartState {
 type CartAction =
   | { type: "hydrate"; payload: CartItem[] }
   | { type: "add"; payload: Omit<CartItem, "quantity"> }
-  | { type: "remove"; payload: { id: string } }
-  | { type: "updateQuantity"; payload: { id: string; quantity: number } }
+  | { type: "remove"; payload: { cartKey: string } }
+  | { type: "updateQuantity"; payload: { cartKey: string; quantity: number } }
   | { type: "clear" };
 
 interface CartContextValue {
@@ -38,8 +40,8 @@ interface CartContextValue {
   itemCount: number;
   total: number;
   addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (cartKey: string) => void;
+  updateQuantity: (cartKey: string, quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -47,7 +49,7 @@ const STORAGE_KEY = "carpinteria-cart";
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-function isValidCartItem(value: unknown): value is CartItem {
+function isValidCartItem(value: unknown): value is Omit<CartItem, "cartKey"> & { cartKey?: string } {
   if (!value || typeof value !== "object") {
     return false;
   }
@@ -83,7 +85,13 @@ function readStoredCart(): CartItem[] {
       return [];
     }
 
-    const safeItems = parsed.filter(isValidCartItem);
+    const safeItems = parsed
+      .filter(isValidCartItem)
+      .map((item) => ({
+        ...item,
+        // backward compat: generate cartKey if missing
+        cartKey: item.cartKey ?? (item.materialSeleccionado ? `${item.id}::${item.materialSeleccionado}` : item.id),
+      })) as CartItem[];
 
     if (safeItems.length !== parsed.length) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(safeItems));
@@ -104,13 +112,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         hydrated: true,
       };
     case "add": {
-      const existingItem = state.items.find((item) => item.id === action.payload.id);
+      const existingItem = state.items.find((item) => item.cartKey === action.payload.cartKey);
 
       if (existingItem) {
         return {
           ...state,
           items: state.items.map((item) =>
-            item.id === action.payload.id
+            item.cartKey === action.payload.cartKey
               ? { ...item, quantity: item.quantity + 1 }
               : item,
           ),
@@ -125,14 +133,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "remove":
       return {
         ...state,
-        items: state.items.filter((item) => item.id !== action.payload.id),
+        items: state.items.filter((item) => item.cartKey !== action.payload.cartKey),
       };
     case "updateQuantity":
       return {
         ...state,
         items: state.items
           .map((item) =>
-            item.id === action.payload.id
+            item.cartKey === action.payload.cartKey
               ? { ...item, quantity: action.payload.quantity }
               : item,
           )
@@ -187,9 +195,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       itemCount,
       total,
       addItem: (item) => dispatch({ type: "add", payload: item }),
-      removeItem: (id) => dispatch({ type: "remove", payload: { id } }),
-      updateQuantity: (id, quantity) =>
-        dispatch({ type: "updateQuantity", payload: { id, quantity } }),
+      removeItem: (cartKey) => dispatch({ type: "remove", payload: { cartKey } }),
+      updateQuantity: (cartKey, quantity) =>
+        dispatch({ type: "updateQuantity", payload: { cartKey, quantity } }),
       clearCart: () => dispatch({ type: "clear" }),
     };
   }, [state.hydrated, state.items]);

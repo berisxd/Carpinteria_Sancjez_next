@@ -1,25 +1,67 @@
 import Link from "next/link";
 
+const NAV_LINKS = [
+  { href: "/#catalogo", label: "Catálogo" },
+  { href: "/cotizacion", label: "Solicitar cotización" },
+  { href: "/#nosotros", label: "Sobre nosotros" },
+  { href: "/#contacto", label: "Contacto" },
+  { href: "/login", label: "Iniciar sesión" },
+];
+
 export function SiteFooter() {
   return (
-    <footer className="mt-14 border-t border-[rgba(31,77,122,0.14)] bg-white/85">
-      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 py-6 text-sm sm:px-6 lg:flex-row lg:px-8">
-        <div>
-          <p className="font-semibold text-[var(--brand-700)]">
-            Carpintería Sánchez
-          </p>
-          <p className="text-[var(--muted)]">
-            Privada Progreso No.12, San Cosme Atlamaxac, Tepeyanco, Tlaxcala
-          </p>
+    <footer style={{ background: "var(--brand)", color: "#fff" }}>
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-3">
+          {/* Brand */}
+          <div>
+            <p className="text-lg font-bold text-white">Carpintería Sánchez</p>
+            <p className="mt-2.5 text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+              Artesanos en madera desde 1995. Muebles a medida para hogares y
+              negocios en Tlaxcala, México.
+            </p>
+          </div>
+
+          {/* Links */}
+          <div>
+            <p className="mb-4 text-[0.7rem] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Navegación
+            </p>
+            <ul className="space-y-2.5">
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm transition-colors hover:text-white"
+                    style={{ color: "rgba(255,255,255,0.6)" }}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <p className="mb-4 text-[0.7rem] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Contacto
+            </p>
+            <ul className="space-y-2.5 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+              <li>(246) 158 1146</li>
+              <li>juanyahelsanchezflores5@gmail.com</li>
+              <li>Privada Progreso No.12</li>
+              <li>San Cosme Atlamaxac, Tlaxcala</li>
+            </ul>
+          </div>
         </div>
-        <div className="text-[var(--muted)] lg:text-right">
-          <p>Tel: (246) 158 1146</p>
-          <p>Email: juanyahelsanchezflores5@gmail.com</p>
-          <p>
-            <Link href="/cotizacion" className="cs-link">
-              Solicitar cotizacion
-            </Link>
-          </p>
+
+        <div
+          className="mt-10 flex flex-col justify-between gap-2 border-t pt-6 text-xs sm:flex-row"
+          style={{ borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.35)" }}
+        >
+          <span>© {new Date().getFullYear()} Carpintería Sánchez. Todos los derechos reservados.</span>
+          <span>Tlaxcala, México</span>
         </div>
       </div>
     </footer>

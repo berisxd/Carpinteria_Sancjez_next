@@ -92,7 +92,7 @@ export function ContactoForm() {
       <button
         type="submit"
         disabled={loading}
-        className="rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
+        className="cs-btn-primary disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading ? "Enviando..." : "Enviar mensaje"}
       </button>

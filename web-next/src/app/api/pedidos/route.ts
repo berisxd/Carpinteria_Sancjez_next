@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { createCheckoutPreference } from "@/lib/mercadopago";
+import { notifyAll, msgNuevoPedido } from "@/lib/notifications";
+import { formatCurrency } from "@/lib/pedidos";
 
 const pedidoSchema = z.object({
   items: z
@@ -110,9 +112,19 @@ export async function POST(request: Request) {
       },
     });
 
+    // Notify workers asynchronously (fire-and-forget, no await to avoid blocking response)
+    void notifyAll(
+      msgNuevoPedido({
+        id: pedido.id,
+        cliente: customer.nombreDestinatario,
+        total: formatCurrency(total),
+        metodo: metodoPago,
+      }),
+    );
+
     let redirectUrl: string | null = null;
 
-    if (metodoPago === "mercado_pago") {
+    if (metodoPago === "mercado_pago" || metodoPago === "tarjeta") {
       const appUrl = process.env.NEXTAUTH_URL?.trim() || new URL(request.url).origin;
       const itemsForMp = detallePedido.map((item) => ({
         title: item.nombre,

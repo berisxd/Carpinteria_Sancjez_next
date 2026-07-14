@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D4A96A"/>
+      <stop offset="40%" stop-color="#C49050"/>
+      <stop offset="100%" stop-color="#A87038"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" fill="url(#g)"/>
+  <path d="M0,20 C55,18 145,22 200,19" stroke="#8A5820" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M0,45 C70,43 130,47 200,44" stroke="#7A4C18" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M0,70 C50,68 150,72 200,69" stroke="#8A5820" stroke-width="1" fill="none" opacity="0.38"/>
+  <path d="M0,95 C65,93 135,97 200,94" stroke="#7A4C18" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M0,120 C55,118 145,122 200,119" stroke="#8A5820" stroke-width="1" fill="none" opacity="0.38"/>
+  <path d="M0,142 C70,140 130,144 200,141" stroke="#7A4C18" stroke-width="1" fill="none" opacity="0.35"/>
+  <!-- wood icon -->
+  <rect x="82" y="55" width="36" height="40" rx="4" fill="none" stroke="#7A4C18" stroke-width="1.5" opacity="0.25"/>
+  <line x1="88" y1="63" x2="112" y2="63" stroke="#7A4C18" stroke-width="1" opacity="0.2"/>
+  <line x1="88" y1="70" x2="112" y2="70" stroke="#7A4C18" stroke-width="1" opacity="0.2"/>
+  <line x1="88" y1="77" x2="112" y2="77" stroke="#7A4C18" stroke-width="1" opacity="0.2"/>
+  <line x1="88" y1="84" x2="112" y2="84" stroke="#7A4C18" stroke-width="1" opacity="0.2"/>
+</svg>

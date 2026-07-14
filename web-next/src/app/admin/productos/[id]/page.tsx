@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { requireAdminSession } from "@/lib/admin";
+import { requireStaffSession } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/pedidos";
+import { AdminMaterialEditor, type MaterialOpcion } from "@/components/admin/AdminMaterialEditor";
+import { AdminDespieceEditor } from "@/components/admin/AdminDespieceEditor";
+import type { DespieceConfig } from "@/lib/despiece/types";
 
 interface PageProps {
   params: Promise<{
@@ -16,7 +19,7 @@ interface PageProps {
 export default async function AdminProductoDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const query = await searchParams;
-  await requireAdminSession(`/admin/productos/${id}`);
+  await requireStaffSession(`/admin/productos/${id}`);
 
   const [producto, categorias] = await Promise.all([
     prisma.producto.findUnique({
@@ -33,7 +36,7 @@ export default async function AdminProductoDetailPage({ params, searchParams }: 
   async function updateProducto(formData: FormData) {
     "use server";
 
-    await requireAdminSession(`/admin/productos/${id}`);
+    await requireStaffSession(`/admin/productos/${id}`);
     const nombre = String(formData.get("nombre") || "").trim();
     const categoriaId = String(formData.get("categoriaId") || "").trim();
     const precioValue = Number(formData.get("precio") || 0);
@@ -61,6 +64,69 @@ export default async function AdminProductoDetailPage({ params, searchParams }: 
 
     redirect(`/admin/productos/${id}?updated=1`);
   }
+
+  async function updateMaterialOpciones(formData: FormData) {
+    "use server";
+    await requireStaffSession(`/admin/productos/${id}`);
+    const raw = String(formData.get("opcionesMaterial") || "[]");
+    let opciones: MaterialOpcion[] = [];
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (Array.isArray(parsed)) {
+        opciones = (parsed as unknown[])
+          .filter((o): o is Record<string, unknown> => !!o && typeof o === "object")
+          .map((o) => ({ nombre: String(o.nombre ?? "").trim(), imagen: String(o.imagen ?? "").trim() }))
+          .filter((o) => o.nombre);
+      }
+    } catch { /* ignore */ }
+    await prisma.producto.update({
+      where: { id },
+      data: { opcionesMaterial: JSON.stringify(opciones) },
+    });
+    redirect(`/admin/productos/${id}?updated=1`);
+  }
+
+  async function updateDespieceJson(formData: FormData) {
+    "use server";
+    await requireStaffSession(`/admin/productos/${id}`);
+    const raw = String(formData.get("despieceJson") || "{}");
+    let config: DespieceConfig | null = null;
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        config = parsed as DespieceConfig;
+      }
+    } catch { /* ignore */ }
+    await prisma.producto.update({
+      where: { id },
+      data: { despieceJson: JSON.stringify(config ?? {}) },
+    });
+    redirect(`/admin/productos/${id}?updated=1`);
+  }
+
+  const despieceConfigActual = (() => {
+    try {
+      const parsed = JSON.parse(producto.despieceJson) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && "piezas" in parsed) {
+        return parsed as DespieceConfig;
+      }
+    } catch { /* ignore */ }
+    return null;
+  })();
+
+  const opcionesActuales = (() => {
+    try {
+      const parsed = JSON.parse(producto.opcionesMaterial) as unknown;
+      if (!Array.isArray(parsed)) return [] as MaterialOpcion[];
+      return (parsed as unknown[]).map((item): MaterialOpcion => {
+        if (typeof item === "string") return { nombre: item, imagen: "" };
+        const o = item as Record<string, unknown>;
+        return { nombre: String(o.nombre ?? ""), imagen: String(o.imagen ?? "") };
+      }).filter((o) => o.nombre);
+    } catch {
+      return [] as MaterialOpcion[];
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
@@ -207,6 +273,35 @@ export default async function AdminProductoDetailPage({ params, searchParams }: 
                   </dd>
                 </div>
               </dl>
+            </section>
+
+            {/* ── Material options manager ─────────────────────────────── */}
+            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-black/20">
+              <h2 className="text-xl font-semibold">Opciones de material</h2>
+              <p className="mt-1 text-xs text-slate-400">
+                El cliente verá una galería visual para elegir el tipo de madera o acabado antes de agregar al carrito.
+              </p>
+
+              <div className="mt-5">
+                <AdminMaterialEditor
+                  action={updateMaterialOpciones}
+                  initialOpciones={opcionesActuales}
+                />
+              </div>
+            </section>
+
+            {/* ── Despiece / Cut-list editor ───────────────────────────── */}
+            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-black/20">
+              <h2 className="text-xl font-semibold">Plano de corte (Cut List)</h2>
+              <p className="mt-1 text-xs text-slate-400">
+                Define las piezas del mueble. El cliente podrá descargar el PDF de despiece antes de confirmar la compra.
+              </p>
+              <div className="mt-5">
+                <AdminDespieceEditor
+                  action={updateDespieceJson}
+                  initialConfig={despieceConfigActual}
+                />
+              </div>
             </section>
           </aside>
         </div>

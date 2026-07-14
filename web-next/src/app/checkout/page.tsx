@@ -55,6 +55,7 @@ export default function CheckoutPage() {
       items: items.map((item) => ({
         id: item.id,
         quantity: item.quantity,
+        materialSeleccionado: item.materialSeleccionado,
       })),
     };
 
@@ -80,9 +81,30 @@ export default function CheckoutPage() {
     clearCart();
     form.reset();
 
+    // Mercado Pago / Tarjeta → redirect to MP checkout
     if (pedidoCreado.redirectUrl) {
       window.location.href = pedidoCreado.redirectUrl;
       return;
+    }
+
+    // Ticket tienda → auto-download voucher PDF then redirect
+    if (metodoPago === "ticket_tienda") {
+      try {
+        const ticketRes = await fetch(`/api/pedidos/${pedidoCreado.id}/ticket`);
+        if (ticketRes.ok) {
+          const blob = await ticketRes.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `voucher-tienda-${pedidoCreado.id}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
+      } catch {
+        // Non-critical, redirect anyway
+      }
     }
 
     router.push(`/pedido/${pedidoCreado.id}?creado=1`);
@@ -183,52 +205,57 @@ export default function CheckoutPage() {
                 </div>
 
                 <fieldset>
-                  <legend className="text-sm font-medium text-[var(--brand-700)]">
+                  <legend className="text-sm font-semibold text-[var(--brand-700)]">
                     Metodo de pago
                   </legend>
-                  <div className="mt-3 space-y-3">
-                    <label className="flex items-start gap-3 rounded-xl border border-[rgba(31,77,122,0.2)] bg-white/90 p-4">
-                      <input
-                        type="radio"
-                        name="metodoPago"
-                        checked={metodoPago === "mercado_pago"}
-                        onChange={() => setMetodoPago("mercado_pago")}
-                      />
-                      <span>
-                        <span className="block font-medium text-[var(--brand-700)]">Mercado Pago</span>
-                        <span className="text-sm text-[var(--muted)]">
-                          Dejado listo para integrar el redirect real en el siguiente paso.
-                        </span>
-                      </span>
+                  <div className="mt-3 grid gap-3">
+
+                    {/* Mercado Pago */}
+                    <label className={`flex cursor-pointer items-start gap-4 rounded-xl border-2 p-4 transition ${metodoPago === "mercado_pago" ? "border-[var(--brand)] bg-[var(--brand)]/5" : "border-[rgba(31,77,122,0.2)] bg-white/90 hover:border-[var(--brand)]/40"}`}>
+                      <input type="radio" className="mt-0.5" name="metodoPago" checked={metodoPago === "mercado_pago"} onChange={() => setMetodoPago("mercado_pago")} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🏦</span>
+                          <span className="font-semibold text-[var(--brand-700)]">Mercado Pago</span>
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">Recomendado</span>
+                        </div>
+                        <p className="mt-1 text-xs text-[var(--muted)]">
+                          Paga con tu cuenta MP o con cualquier tarjeta. Te redirigimos a la plataforma segura de Mercado Pago.
+                        </p>
+                      </div>
                     </label>
-                    <label className="flex items-start gap-3 rounded-xl border border-[rgba(31,77,122,0.2)] bg-white/90 p-4">
-                      <input
-                        type="radio"
-                        name="metodoPago"
-                        checked={metodoPago === "tarjeta"}
-                        onChange={() => setMetodoPago("tarjeta")}
-                      />
-                      <span>
-                        <span className="block font-medium text-[var(--brand-700)]">Tarjeta</span>
-                        <span className="text-sm text-[var(--muted)]">
-                          Simulado para esta fase local.
-                        </span>
-                      </span>
+
+                    {/* Tarjeta */}
+                    <label className={`flex cursor-pointer items-start gap-4 rounded-xl border-2 p-4 transition ${metodoPago === "tarjeta" ? "border-[var(--brand)] bg-[var(--brand)]/5" : "border-[rgba(31,77,122,0.2)] bg-white/90 hover:border-[var(--brand)]/40"}`}>
+                      <input type="radio" className="mt-0.5" name="metodoPago" checked={metodoPago === "tarjeta"} onChange={() => setMetodoPago("tarjeta")} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">💳</span>
+                          <span className="font-semibold text-[var(--brand-700)]">Tarjeta de credito / debito</span>
+                        </div>
+                        <p className="mt-1 text-xs text-[var(--muted)]">
+                          Ingresa tus datos de tarjeta de forma segura a traves de Mercado Pago.
+                        </p>
+                      </div>
                     </label>
-                    <label className="flex items-start gap-3 rounded-xl border border-[rgba(31,77,122,0.2)] bg-white/90 p-4">
-                      <input
-                        type="radio"
-                        name="metodoPago"
-                        checked={metodoPago === "ticket_tienda"}
-                        onChange={() => setMetodoPago("ticket_tienda")}
-                      />
-                      <span>
-                        <span className="block font-medium text-[var(--brand-700)]">Pago en tienda</span>
-                        <span className="text-sm text-[var(--muted)]">
-                          Reservamos el pedido para retiro o coordinacion directa.
-                        </span>
-                      </span>
+
+                    {/* Ticket tienda */}
+                    <label className={`flex cursor-pointer items-start gap-4 rounded-xl border-2 p-4 transition ${metodoPago === "ticket_tienda" ? "border-amber-500 bg-amber-50" : "border-[rgba(31,77,122,0.2)] bg-white/90 hover:border-amber-400/60"}`}>
+                      <input type="radio" className="mt-0.5" name="metodoPago" checked={metodoPago === "ticket_tienda"} onChange={() => setMetodoPago("ticket_tienda")} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🏪</span>
+                          <span className="font-semibold text-[var(--brand-700)]">Pago en tienda fisica</span>
+                        </div>
+                        <p className="mt-1 text-xs text-[var(--muted)]">
+                          Recibe un <strong>voucher PDF</strong> con los detalles de tu pedido y pagalo directamente en nuestra sucursal. Aceptamos efectivo y tarjeta en tienda.
+                        </p>
+                        <p className="mt-1.5 text-[11px] font-medium text-amber-700">
+                          Privada Progreso No. 12, San Cosme Atlamaxac, Tepeyanco, Tlaxcala
+                        </p>
+                      </div>
                     </label>
+
                   </div>
                 </fieldset>
 
@@ -239,7 +266,11 @@ export default function CheckoutPage() {
                   disabled={loading || items.length === 0}
                   className="w-full rounded-lg bg-[var(--accent)] px-5 py-3 font-semibold text-white shadow-md transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {loading ? "Creando pedido..." : "Confirmar pedido"}
+                  {loading
+                    ? "Procesando..."
+                    : metodoPago === "ticket_tienda"
+                    ? "Reservar y descargar voucher"
+                    : "Continuar al pago"}
                 </button>
               </form>
             </section>
@@ -260,20 +291,25 @@ export default function CheckoutPage() {
               ) : (
                 <div className="mt-6 space-y-4">
                   {items.map((item) => (
-                    <div key={item.id} className="rounded-xl border border-[rgba(31,77,122,0.2)] bg-white/90 p-4">
+                    <div key={item.cartKey} className="rounded-xl border border-[rgba(31,77,122,0.2)] bg-white/90 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="text-xs font-semibold uppercase text-[var(--muted)]">
                             {item.categoria.nombre}
                           </p>
                           <h3 className="mt-1 font-semibold text-[var(--brand-700)]">{item.nombre}</h3>
+                          {item.materialSeleccionado && (
+                            <span className="mt-1 inline-block rounded-full bg-[var(--brand)]/10 px-2 py-0.5 text-xs font-medium text-[var(--brand-700)]">
+                              {item.materialSeleccionado}
+                            </span>
+                          )}
                           <p className="mt-2 text-sm text-[var(--muted)]">
                             ${item.precio.toLocaleString("es-AR")} c/u
                           </p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item.cartKey)}
                           className="text-sm text-slate-500 hover:text-red-600"
                         >
                           Quitar
@@ -284,7 +320,7 @@ export default function CheckoutPage() {
                         <div className="inline-flex items-center rounded-lg border border-[rgba(31,77,122,0.2)] bg-white">
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.cartKey, item.quantity - 1)}
                             className="px-3 py-2 text-sm text-[var(--brand-700)]"
                           >
                             -
@@ -294,7 +330,7 @@ export default function CheckoutPage() {
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.cartKey, item.quantity + 1)}
                             className="px-3 py-2 text-sm text-[var(--brand-700)]"
                           >
                             +

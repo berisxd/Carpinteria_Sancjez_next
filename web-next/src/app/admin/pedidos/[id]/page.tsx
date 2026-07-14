@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/admin";
+import { requireStaffSession, isAdmin } from "@/lib/admin";
 import {
   formatCurrency,
   parsePedidoProductos,
@@ -16,7 +16,8 @@ interface PageProps {
 
 export default async function AdminPedidoDetailPage({ params }: PageProps) {
   const { id } = await params;
-  await requireAdminSession(`/admin/pedidos/${id}`);
+  const session = await requireStaffSession(`/admin/pedidos/${id}`);
+  const canEditStatus = true; // ADMIN and WORKER can both change order status
 
   const pedido = await prisma.pedido.findUnique({
     where: { id },
@@ -31,7 +32,10 @@ export default async function AdminPedidoDetailPage({ params }: PageProps) {
   async function updatePedidoStatus(formData: FormData) {
     "use server";
 
-    await requireAdminSession(`/admin/pedidos/${id}`);
+    // Staff (ADMIN and WORKER) can change order status
+    const s = await requireStaffSession(`/admin/pedidos/${id}`);
+    void s; // session validated
+
     const estado = String(formData.get("estado") || "pendiente");
 
     if (!pedidoStatusOptions.includes(estado as (typeof pedidoStatusOptions)[number])) {
@@ -63,25 +67,31 @@ export default async function AdminPedidoDetailPage({ params }: PageProps) {
             </p>
           </div>
 
-          <form action={updatePedidoStatus} className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <select
-              name="estado"
-              defaultValue={pedido.estado}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none"
-            >
-              {pedidoStatusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
-            >
-              Guardar estado
-            </button>
-          </form>
+          {canEditStatus ? (
+            <form action={updatePedidoStatus} className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3">
+              <select
+                name="estado"
+                defaultValue={pedido.estado}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none"
+              >
+                {pedidoStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
+              >
+                Guardar estado
+              </button>
+            </form>
+          ) : (
+            <span className="inline-flex items-center rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-semibold capitalize text-amber-300">
+              {pedido.estado}
+            </span>
+          )}
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">

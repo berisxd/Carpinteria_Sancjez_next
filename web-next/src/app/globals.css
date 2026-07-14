@@ -1,146 +1,270 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f2f7fb;
-  --foreground: #1a2434;
-  --brand: #1f4d7a;
-  --brand-700: #173f67;
-  --brand-soft: #8aaec8;
-  --accent: #b6783f;
-  --muted: #61708a;
+  /* Palette */
+  --bg: #f5f0e8;
+  --fg: #1b1713;
+  --brand: #1a3520;
+  --brand-700: #112518;
+  --brand-400: #3a7a42;
+  --brand-soft: #edf5ee;
+  --accent: #c07d30;
+  --accent-600: #a86828;
+  --accent-light: #fdf0e2;
+  --muted: #72685e;
+  --surface: #ffffff;
+  --border: #e3d9cd;
+  --border-dark: #c5b9ab;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
   --font-sans: var(--font-inter);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  background-image: linear-gradient(160deg, #f7fbff 0%, #eaf3fb 55%, #f4f8fc 100%);
+  background-color: var(--bg);
+  color: var(--fg);
   font-family: var(--font-inter), "Inter", system-ui, sans-serif;
+  line-height: 1.65;
 }
 
-.cs-page {
-  min-height: 100vh;
-}
+/* ── Navbar ─────────────────────────────────────── */
 
 .cs-navbar {
-  background: linear-gradient(135deg, var(--brand), var(--brand-700));
-  border-bottom: 2px solid rgba(31, 77, 122, 0.35);
-  box-shadow: 0 6px 18px rgba(17, 38, 67, 0.22);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(27, 23, 19, 0.07);
 }
 
 .cs-brand {
-  color: #ffffff;
-  font-size: 1.25rem;
+  color: var(--fg);
+  font-size: 1.1rem;
   font-weight: 800;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.015em;
 }
 
 .cs-brand span {
-  color: #d6e7f7;
+  color: var(--accent);
 }
 
 .cs-nav-link {
-  color: #ecf4fc;
-  transition: color 0.2s ease;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.875rem;
+  position: relative;
+  padding-bottom: 2px;
+  transition: color 0.15s ease;
+}
+
+.cs-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 0.2s ease;
 }
 
 .cs-nav-link:hover {
-  color: #ffffff;
+  color: var(--fg);
 }
+
+.cs-nav-link:hover::after {
+  width: 100%;
+}
+
+/* ── Buttons ────────────────────────────────────── */
 
 .cs-btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.7rem;
-  background: linear-gradient(135deg, var(--accent), #a96a2f);
+  gap: 0.35rem;
+  border-radius: 0.5rem;
+  background: var(--accent);
   color: #fff;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.88rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  box-shadow: 0 8px 16px rgba(182, 120, 63, 0.28);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.01em;
+  box-shadow: 0 3px 10px rgba(192, 125, 48, 0.28);
+  transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .cs-btn-primary:hover {
+  background: var(--accent-600);
   transform: translateY(-1px);
-  box-shadow: 0 12px 20px rgba(182, 120, 63, 0.35);
+  box-shadow: 0 5px 14px rgba(192, 125, 48, 0.36);
+}
+
+.cs-btn-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 0.5rem;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(26, 53, 32, 0.22);
+  transition: background 0.18s ease, transform 0.15s ease;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cs-btn-brand:hover {
+  background: var(--brand-700);
+  transform: translateY(-1px);
 }
 
 .cs-btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  color: #fff;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.88rem;
+  gap: 0.35rem;
+  border-radius: 0.5rem;
+  border: 1.5px solid var(--border-dark);
+  color: var(--fg);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
-  transition: background 0.2s ease, color 0.2s ease;
+  background: transparent;
+  transition: border-color 0.18s ease, background 0.18s ease;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .cs-btn-outline:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  border-color: var(--fg);
+  background: rgba(27, 23, 19, 0.04);
 }
+
+.cs-btn-hero-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 0.5rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.07);
+  transition: border-color 0.18s ease, background 0.18s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cs-btn-hero-outline:hover {
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.13);
+}
+
+/* ── Hero ───────────────────────────────────────── */
 
 .cs-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 1.3rem;
-  background: linear-gradient(145deg, rgba(8, 32, 64, 0.9), rgba(12, 45, 88, 0.72));
-  box-shadow: 0 20px 44px rgba(17, 38, 67, 0.2);
+  background: linear-gradient(140deg, #0d1e10 0%, #1a3520 55%, #0c1a0f 100%);
 }
 
-.cs-hero-panel {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1rem;
-  background: rgba(3, 21, 44, 0.58);
-  backdrop-filter: blur(8px);
+.cs-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 80% 35%, rgba(192, 125, 48, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 85%, rgba(58, 122, 66, 0.2) 0%, transparent 50%);
+  pointer-events: none;
 }
+
+/* ── Cards ──────────────────────────────────────── */
 
 .cs-card {
-  border: 1px solid rgba(31, 77, 122, 0.1);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 252, 0.95));
-  box-shadow: 0 10px 24px rgba(17, 38, 67, 0.09);
-  border-radius: 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px rgba(27, 23, 19, 0.05);
 }
+
+/* ── Section typography ─────────────────────────── */
+
+.cs-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-section-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--fg);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+/* ── Form inputs ────────────────────────────────── */
 
 .cs-input {
   margin-top: 0.35rem;
   width: 100%;
-  border-radius: 0.7rem;
-  border: 1px solid rgba(31, 77, 122, 0.25);
-  background: #ffffff;
+  border-radius: 0.5rem;
+  border: 1.5px solid var(--border);
+  background: #fff;
   padding: 0.58rem 0.75rem;
-  font-size: 0.92rem;
-  color: var(--foreground);
+  font-size: 0.9rem;
+  color: var(--fg);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .cs-input:hover {
-  border-color: rgba(31, 77, 122, 0.45);
+  border-color: var(--border-dark);
 }
 
 .cs-input:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(31, 77, 122, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(192, 125, 48, 0.13);
 }
 
+/* ── Links ──────────────────────────────────────── */
+
 .cs-link {
-  color: var(--brand);
+  color: var(--accent);
   font-weight: 600;
   text-decoration: none;
 }
 
 .cs-link:hover {
   text-decoration: underline;
+}
+
+/* ── Pill badge ─────────────────────────────────── */
+
+.cs-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(192, 125, 48, 0.14);
+  color: #e9a94c;
+  border: 1px solid rgba(192, 125, 48, 0.28);
+  border-radius: 999px;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }

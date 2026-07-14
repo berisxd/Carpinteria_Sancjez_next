@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F5E09A"/>
+      <stop offset="35%" stop-color="#EDD070"/>
+      <stop offset="100%" stop-color="#D4A84B"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="150" fill="url(#g)"/>
+  <path d="M0,12 C40,10 100,14 200,11" stroke="#C49030" stroke-width="0.8" fill="none" opacity="0.35"/>
+  <path d="M0,28 C60,26 130,30 200,27" stroke="#BF8A2A" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <path d="M0,46 C50,43 150,49 200,45" stroke="#C49030" stroke-width="1.2" fill="none" opacity="0.4"/>
+  <path d="M0,60 C70,58 120,62 200,59" stroke="#BF8A2A" stroke-width="0.7" fill="none" opacity="0.3"/>
+  <path d="M0,78 C45,76 155,80 200,77" stroke="#C49030" stroke-width="1" fill="none" opacity="0.38"/>
+  <path d="M0,93 C65,91 135,95 200,92" stroke="#BF8A2A" stroke-width="0.7" fill="none" opacity="0.3"/>
+  <path d="M0,110 C55,108 145,112 200,109" stroke="#C49030" stroke-width="1.3" fill="none" opacity="0.4"/>
+  <path d="M0,126 C50,124 150,128 200,125" stroke="#BF8A2A" stroke-width="0.8" fill="none" opacity="0.32"/>
+  <path d="M0,140 C70,138 130,142 200,139" stroke="#C49030" stroke-width="0.7" fill="none" opacity="0.3"/>
+  <!-- knot -->
+  <ellipse cx="70" cy="72" rx="10" ry="7" stroke="#A0741A" stroke-width="1.2" fill="none" opacity="0.45"/>
+  <ellipse cx="70" cy="72" rx="5" ry="3" stroke="#A0741A" stroke-width="0.8" fill="none" opacity="0.35"/>
+</svg>

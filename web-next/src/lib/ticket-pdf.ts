@@ -203,6 +203,84 @@ export async function buildPedidoTicketPdf(pedido: Pedido) {
     color: rgb(0.06, 0.24, 0.45),
   });
 
+  // ── Extra section for tienda voucher ─────────────────────────────────────────
+  if (pedido.metodoPago === "ticket_tienda") {
+    y -= 50;
+
+    // Voucher box
+    page.drawRectangle({
+      x: 42,
+      y: y - 88,
+      width: width - 84,
+      height: 88,
+      color: rgb(0.97, 0.96, 0.90),
+      borderColor: rgb(0.86, 0.61, 0.12),
+      borderWidth: 1.5,
+    });
+
+    page.drawText("VOUCHER PARA PAGO EN TIENDA", {
+      x: 52,
+      y: y - 18,
+      size: 11,
+      font: fontBold,
+      color: rgb(0.60, 0.39, 0.03),
+    });
+
+    const voucherLines = [
+      "Presenta este documento en nuestra sucursal para confirmar tu pedido.",
+      `Monto a pagar: ${formatMoney(Number(pedido.total))}`,
+      "Aceptamos: Efectivo | Tarjeta de debito/credito",
+      "Sucursal: Privada Progreso No. 12, San Cosme Atlamaxac, Tepeyanco, Tlaxcala",
+      "Tel: (246) 158 1146",
+    ];
+
+    let vy = y - 34;
+    for (const line of voucherLines) {
+      page.drawText(line, {
+        x: 52,
+        y: vy,
+        size: 8.5,
+        font: fontRegular,
+        color: rgb(0.22, 0.16, 0.04),
+      });
+      vy -= 11;
+    }
+
+    y -= 100;
+  }
+
+  // Signature area (for tienda payment)
+  if (pedido.metodoPago === "ticket_tienda") {
+    y -= 20;
+    page.drawLine({
+      start: { x: 42, y },
+      end: { x: 220, y },
+      thickness: 0.7,
+      color: rgb(0.6, 0.62, 0.66),
+    });
+    page.drawLine({
+      start: { x: 360, y },
+      end: { x: 540, y },
+      thickness: 0.7,
+      color: rgb(0.6, 0.62, 0.66),
+    });
+    y -= 10;
+    page.drawText("Firma del cliente", {
+      x: 100,
+      y,
+      size: 8,
+      font: fontRegular,
+      color: rgb(0.5, 0.52, 0.55),
+    });
+    page.drawText("Sello / Firma Carpinteria Sanchez", {
+      x: 360,
+      y,
+      size: 8,
+      font: fontRegular,
+      color: rgb(0.5, 0.52, 0.55),
+    });
+  }
+
   page.drawText("Documento generado automaticamente por Carpinteria Sanchez", {
     x: 140,
     y: 28,
