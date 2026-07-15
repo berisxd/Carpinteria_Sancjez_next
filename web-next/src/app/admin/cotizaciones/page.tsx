@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { Prisma, TipoMueble } from "@prisma/client";
 import { requireStaffSession } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { TipoMueble } from "@prisma/client";
 
 const TIPO_MUEBLE_LABELS: Record<TipoMueble, string> = {
   cocinas_integrales: "Cocinas integrales",
@@ -33,7 +33,7 @@ export default async function AdminCotizacionesPage({ searchParams }: PageProps)
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const skip = (page - 1) * PAGE_SIZE;
 
-  const where: Parameters<typeof prisma.cotizacion.findMany>[0]["where"] = {};
+  const where: Prisma.CotizacionWhereInput = {};
 
   if (q) {
     where.OR = [
