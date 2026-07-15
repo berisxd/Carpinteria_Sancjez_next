@@ -26,6 +26,8 @@ export default async function AdminIndexPage() {
     productosHabilitados,
     totalCategorias,
     totalEquipo,
+    totalCotizaciones,
+    cotizacionesRecientes,
     ultimosPedidos,
     pedidosPorEstado,
     ventasRecientes,
@@ -44,6 +46,14 @@ export default async function AdminIndexPage() {
     prisma.producto.count({ where: { habilitado: true } }),
     prisma.categoria.count(),
     prisma.user.count({ where: { role: { in: ["ADMIN", "WORKER"] } } }),
+    prisma.cotizacion.count(),
+    prisma.cotizacion.count({
+      where: {
+        createdAt: {
+          gte: sevenDaysAgo,
+        },
+      },
+    }),
     prisma.pedido.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -98,6 +108,12 @@ export default async function AdminIndexPage() {
       value: String(totalCategorias),
       hint: "Catálogo activo",
     },
+    {
+      label: "Cotizaciones",
+      value: String(totalCotizaciones),
+      hint: `${cotizacionesRecientes} en los últimos 7 días`,
+      href: "/admin/cotizaciones",
+    },
   ];
 
   const equipoKpi = esAdmin
@@ -148,6 +164,12 @@ export default async function AdminIndexPage() {
             >
               Ver pedidos
             </Link>
+            <Link
+              href="/admin/cotizaciones"
+              className="rounded-lg border border-amber-700/60 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:border-amber-500 hover:bg-amber-900/20"
+            >
+              Cotizaciones
+            </Link>
             {esAdmin && (
               <>
                 <Link
@@ -167,19 +189,33 @@ export default async function AdminIndexPage() {
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {kpis.map((kpi) => (
-            <article
-              key={kpi.label}
-              className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-2xl shadow-black/20"
-            >
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                {kpi.label}
-              </p>
-              <p className="mt-2 text-2xl font-bold text-slate-100">{kpi.value}</p>
-              <p className="mt-2 text-xs text-slate-500">{kpi.hint}</p>
-            </article>
-          ))}
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {kpis.map((kpi) =>
+            "href" in kpi && kpi.href ? (
+              <Link
+                key={kpi.label}
+                href={kpi.href}
+                className="group rounded-2xl border border-amber-800/40 bg-amber-900/10 p-5 shadow-2xl shadow-black/20 transition hover:border-amber-600/60 hover:bg-amber-900/20"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-amber-400/70">
+                  {kpi.label}
+                </p>
+                <p className="mt-2 text-2xl font-bold text-amber-300">{kpi.value}</p>
+                <p className="mt-2 text-xs text-amber-500/80">{kpi.hint} →</p>
+              </Link>
+            ) : (
+              <article
+                key={kpi.label}
+                className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-2xl shadow-black/20"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  {kpi.label}
+                </p>
+                <p className="mt-2 text-2xl font-bold text-slate-100">{kpi.value}</p>
+                <p className="mt-2 text-xs text-slate-500">{kpi.hint}</p>
+              </article>
+            )
+          )}
           {equipoKpi && (
             <Link
               href={equipoKpi.href}
