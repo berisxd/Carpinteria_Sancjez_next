@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireStaffSession } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { TipoMueble } from "@prisma/client";
+import { CotizacionImagen } from "@/components/admin/CotizacionImagen";
 
 const TIPO_MUEBLE_LABELS: Record<TipoMueble, string> = {
   cocinas_integrales: "Cocinas integrales",
@@ -120,25 +121,16 @@ export default async function AdminCotizacionDetallePage({ params }: PageProps) 
         </section>
 
         {/* Imagen de referencia */}
-        {cotizacion.imagenReferencia && (
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-black/20 space-y-4">
-            <h2 className="text-lg font-semibold border-b border-slate-800 pb-3">Imagen de referencia</h2>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={cotizacion.imagenReferencia}
-              alt="Imagen de referencia del cliente"
-              className="rounded-xl max-w-full max-h-96 object-contain border border-slate-700"
-            />
-            <a
-              href={cotizacion.imagenReferencia}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block text-sm text-sky-400 hover:text-sky-300 transition"
-            >
-              Abrir imagen en tamaño completo →
-            </a>
-          </section>
-        )}
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-black/20 space-y-4">
+          <h2 className="text-lg font-semibold border-b border-slate-800 pb-3">Imagen de referencia</h2>
+          {cotizacion.imagenReferencia ? (
+            <CotizacionImagen src={cotizacion.imagenReferencia} />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-6 py-12 text-center">
+              <p className="text-sm text-slate-400">El cliente no adjuntó imagen de referencia.</p>
+            </div>
+          )}
+        </section>
 
         {/* Acciones */}
         <div className="flex flex-wrap gap-3">

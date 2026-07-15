@@ -117,6 +117,7 @@ model Pedido {
   ciudad              String
   codigoPostal        String
   referencia          String   @default("")
+  costoEnvio          Decimal? @db.Decimal(10, 2)
   total               Decimal  @db.Decimal(10, 2)
   metodoPago          String   // 'tarjeta' | 'mercado_pago' | 'ticket_tienda'
   estado              String   @default("pendiente") // 'pendiente' | 'confirmado' | 'procesando' | 'enviado' | 'entregado' | 'cancelado'
@@ -132,6 +133,19 @@ model Pedido {
   @@index([email])
   @@index([mpPreferenceId])
   @@index([mpPaymentId])
+}
+
+model ZonaEnvio {
+  id           String   @id @default(cuid())
+  codigoPostal String   @unique
+  municipio    String   @default("")
+  precio       Decimal  @db.Decimal(10, 2)
+  habilitado   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([codigoPostal])
+  @@index([habilitado])
 }
 
 model Contacto {

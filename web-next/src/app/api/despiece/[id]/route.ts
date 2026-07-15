@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { optimizar } from "@/lib/despiece/optimizer";
 import { generarDespiecePdf } from "@/lib/despiece/pdf-generator";
@@ -9,6 +11,16 @@ interface Context {
 }
 
 export async function GET(req: NextRequest, { params }: Context) {
+  const session = await getServerSession(authOptions);
+  const role = session?.user?.role;
+
+  if (!session || (role !== "ADMIN" && role !== "WORKER")) {
+    return NextResponse.json(
+      { error: "Acceso restringido. Solo disponible para empleados y administradores." },
+      { status: 403 },
+    );
+  }
+
   const { id } = await params;
 
   const producto = await prisma.producto.findUnique({

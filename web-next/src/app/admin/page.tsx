@@ -170,6 +170,12 @@ export default async function AdminIndexPage() {
             >
               Cotizaciones
             </Link>
+            <Link
+              href="/admin/envios"
+              className="rounded-lg border border-emerald-700/60 px-4 py-2 text-sm font-semibold text-emerald-300 transition hover:border-emerald-500 hover:bg-emerald-900/20"
+            >
+              Zonas de envío
+            </Link>
             {esAdmin && (
               <>
                 <Link

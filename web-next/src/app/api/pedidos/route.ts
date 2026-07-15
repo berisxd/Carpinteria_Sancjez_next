@@ -24,6 +24,7 @@ const pedidoSchema = z.object({
     referencia: z.string().optional().default(""),
   }),
   metodoPago: z.enum(["tarjeta", "mercado_pago", "ticket_tienda"]),
+  costoEnvio: z.number().nonnegative().default(0),
 });
 
 export async function POST(request: Request) {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { items, customer, metodoPago } = result.data;
+    const { items, customer, metodoPago, costoEnvio } = result.data;
 
     if (metodoPago === "mercado_pago" && !process.env.MP_ACCESS_TOKEN) {
       return NextResponse.json(
@@ -94,7 +95,8 @@ export async function POST(request: Request) {
       };
     });
 
-    const total = detallePedido.reduce((sum, item) => sum + item.subtotal, 0);
+    const subtotal = detallePedido.reduce((sum, item) => sum + item.subtotal, 0);
+    const total = subtotal + costoEnvio;
 
     const pedido = await prisma.pedido.create({
       data: {
@@ -106,6 +108,7 @@ export async function POST(request: Request) {
         codigoPostal: customer.codigoPostal,
         referencia: customer.referencia ?? "",
         total,
+        costoEnvio: costoEnvio > 0 ? costoEnvio : null,
         metodoPago,
         estado: "pendiente",
         productosJson: JSON.stringify(detallePedido),

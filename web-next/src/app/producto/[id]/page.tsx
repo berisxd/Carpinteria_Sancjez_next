@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { AddToCartButton, type MaterialOpcion } from "@/components/cart/AddToCartButton";
 import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -31,6 +33,11 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ProductoPage({ params }: PageProps) {
   const { id } = await params;
+
+  const session = await getServerSession(authOptions);
+  const role = session?.user?.role;
+  const puedeVerDespiece = role === "ADMIN" || role === "WORKER";
+
   const producto = await prisma.producto.findUnique({
     where: { id },
     include: {
@@ -156,7 +163,7 @@ export default async function ProductoPage({ params }: PageProps) {
               }}
             />
 
-            {hasDespiece && (
+            {hasDespiece && puedeVerDespiece && (
               <DescargaDespieceButton
                 productoId={producto.id}
                 productoNombre={producto.nombre}

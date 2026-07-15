@@ -2,12 +2,19 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { EnvioModal } from "@/components/checkout/EnvioModal";
 
 type MetodoPago = "tarjeta" | "mercado_pago" | "ticket_tienda";
+
+interface ZonaEnvio {
+  codigoPostal: string;
+  municipio: string;
+  precio: number;
+}
 
 interface PedidoCreado {
   id: string;
@@ -27,6 +34,35 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [metodoPago, setMetodoPago] = useState<MetodoPago>("mercado_pago");
+
+  // Estado de envío
+  const [zonaEnvio, setZonaEnvio] = useState<ZonaEnvio | null>(null);
+  const [showEnvioModal, setShowEnvioModal] = useState(false);
+  const [costoEnvio, setCostoEnvio] = useState(0);
+  const [envioAceptado, setEnvioAceptado] = useState<boolean | null>(null);
+  const lastCpChecked = useRef("");
+
+  const totalConEnvio = total + costoEnvio;
+
+  async function checkEnvio(cp: string) {
+    const trimmed = cp.trim();
+    if (!trimmed || trimmed === lastCpChecked.current) return;
+    lastCpChecked.current = trimmed;
+    // Reset envio state when CP changes
+    setZonaEnvio(null);
+    setCostoEnvio(0);
+    setEnvioAceptado(null);
+    try {
+      const res = await fetch(`/api/envios/zona?cp=${encodeURIComponent(trimmed)}`);
+      const data = (await res.json()) as { zona: ZonaEnvio | null };
+      if (data.zona) {
+        setZonaEnvio(data.zona);
+        setShowEnvioModal(true);
+      }
+    } catch {
+      // silencioso — envío no disponible
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,6 +88,7 @@ export default function CheckoutPage() {
         referencia: String(formData.get("referencia") || ""),
       },
       metodoPago,
+      costoEnvio,
       items: items.map((item) => ({
         id: item.id,
         quantity: item.quantity,
@@ -122,6 +159,23 @@ export default function CheckoutPage() {
     <div className="cs-page">
       <SiteHeader />
 
+      {/* Modal de envío */}
+      {showEnvioModal && zonaEnvio && (
+        <EnvioModal
+          zona={zonaEnvio}
+          onAceptar={() => {
+            setCostoEnvio(zonaEnvio.precio);
+            setEnvioAceptado(true);
+            setShowEnvioModal(false);
+          }}
+          onRechazar={() => {
+            setCostoEnvio(0);
+            setEnvioAceptado(false);
+            setShowEnvioModal(false);
+          }}
+        />
+      )}
+
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
@@ -191,8 +245,28 @@ export default function CheckoutPage() {
                     <input
                       name="codigoPostal"
                       required
+                      onBlur={(e) => void checkEnvio(e.target.value)}
                       className="mt-1 w-full rounded-lg border border-[rgba(31,77,122,0.25)] bg-white px-3 py-2 text-sm outline-none ring-[var(--brand)]/15 focus:ring"
                     />
+                    {envioAceptado === true && (
+                      <span className="mt-1 inline-block text-xs font-medium text-emerald-600">
+                        ✓ Envío a domicilio incluido
+                      </span>
+                    )}
+                    {envioAceptado === false && (
+                      <span className="mt-1 inline-block text-xs text-[var(--muted)]">
+                        Sin envío — pasarás a recoger en tienda
+                      </span>
+                    )}
+                    {zonaEnvio && envioAceptado === null && (
+                      <button
+                        type="button"
+                        onClick={() => setShowEnvioModal(true)}
+                        className="mt-1 text-xs font-semibold text-[var(--brand)] hover:underline"
+                      >
+                        Ver opción de envío disponible →
+                      </button>
+                    )}
                   </label>
                   <label className="block text-sm font-medium text-[var(--brand-700)]">
                     Referencia
@@ -348,9 +422,17 @@ export default function CheckoutPage() {
                       <span>Subtotal</span>
                       <span>${total.toLocaleString("es-AR")}</span>
                     </div>
-                    <div className="mt-3 flex items-center justify-between text-lg font-bold text-[var(--brand-700)]">
-                      <span>Total</span>
-                      <span>${total.toLocaleString("es-AR")}</span>
+                  {costoEnvio > 0 && (
+                    <div className="mt-2 flex items-center justify-between text-sm">
+                      <span className="text-emerald-700">Envío a domicilio</span>
+                      <span className="font-medium text-emerald-700">
+                        +${costoEnvio.toLocaleString("es-AR")}
+                      </span>
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between text-lg font-bold text-[var(--brand-700)]">
+                    <span>Total</span>
+                    <span>${totalConEnvio.toLocaleString("es-AR")}</span>
                     </div>
                   </div>
                 </div>
