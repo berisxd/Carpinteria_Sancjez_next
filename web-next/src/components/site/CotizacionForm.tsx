@@ -89,14 +89,15 @@ export function CotizacionForm() {
       </label>
 
       <label className="block text-sm font-medium text-[var(--brand-700)]">
-        Imagen de referencia <span className="text-red-500">*</span> (JPG/PNG/WEBP, max 5MB)
+        URL de imagen de referencia <span className="text-red-500">*</span>
         <input
           name="imagenReferencia"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
+          type="url"
           required
+          placeholder="https://ejemplo.com/imagen-del-mueble.jpg"
           className="cs-input"
         />
+        <span className="mt-1 block text-xs text-[var(--muted)]">Pega el enlace de una foto de referencia (Google Imágenes, Pinterest, etc.)</span>
       </label>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
