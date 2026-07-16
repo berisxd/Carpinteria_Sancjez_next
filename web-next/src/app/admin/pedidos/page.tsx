@@ -429,6 +429,8 @@ export default async function AdminPedidosPage({ searchParams }: PageProps) {
         </section>
 
         <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl shadow-black/20">
+          <div className="overflow-x-auto">
+          <div className="min-w-[720px]">
           <div className="grid grid-cols-[1.1fr_0.8fr_0.7fr_0.6fr_0.6fr_0.8fr_0.5fr] gap-4 border-b border-slate-800 px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-400">
             <span>Pedido</span>
             <Link href={sortHref("nombre")} className="hover:text-slate-200">
@@ -501,6 +503,8 @@ export default async function AdminPedidosPage({ searchParams }: PageProps) {
                 No hay pedidos para los filtros seleccionados.
               </div>
             ) : null}
+          </div>
+          </div>
           </div>
         </section>
 

@@ -62,12 +62,12 @@ export function SiteHeader() {
                   Panel admin
                 </Link>
               )}
-              <span className="hidden max-w-[120px] truncate text-xs text-[var(--muted)] sm:block">
+              <span className="hidden max-w-[120px] truncate text-xs text-[var(--muted)] md:block">
                 {session.user?.name ?? session.user?.email}
               </span>
               <button
                 onClick={() => void signOut({ callbackUrl: "/" })}
-                className="cs-btn-outline hidden sm:inline-flex"
+                className="cs-btn-outline hidden md:inline-flex"
               >
                 Salir
               </button>
