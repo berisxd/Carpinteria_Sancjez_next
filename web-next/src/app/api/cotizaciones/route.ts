@@ -56,6 +56,13 @@ export async function POST(request: Request) {
     const imagenReferenciaFile = formData.get("imagenReferencia");
     let imagenReferenciaPath: string | null = null;
 
+    if (!(imagenReferenciaFile instanceof File) || imagenReferenciaFile.size === 0) {
+      return NextResponse.json(
+        { error: "La imagen de referencia es obligatoria." },
+        { status: 400 },
+      );
+    }
+
     if (imagenReferenciaFile instanceof File && imagenReferenciaFile.size > 0) {
       if (imagenReferenciaFile.size > MAX_IMAGE_SIZE_BYTES) {
         return NextResponse.json(

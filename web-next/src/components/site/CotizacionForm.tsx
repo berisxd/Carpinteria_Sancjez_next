@@ -89,11 +89,12 @@ export function CotizacionForm() {
       </label>
 
       <label className="block text-sm font-medium text-[var(--brand-700)]">
-        Imagen de referencia (opcional, JPG/PNG/WEBP, max 5MB)
+        Imagen de referencia <span className="text-red-500">*</span> (JPG/PNG/WEBP, max 5MB)
         <input
           name="imagenReferencia"
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          required
           className="cs-input"
         />
       </label>
