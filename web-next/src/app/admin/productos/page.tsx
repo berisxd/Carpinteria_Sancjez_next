@@ -220,7 +220,13 @@ export default async function AdminProductosPage({ searchParams }: PageProps) {
               Busca, filtra y administra disponibilidad del catálogo.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/admin/productos/nuevo"
+              className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
+            >
+              + Nuevo producto
+            </Link>
             <Link
               href="/admin"
               className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
