@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { CartFloatingButton } from "@/components/cart/CartFloatingButton";
 import { CartProvider } from "@/components/cart/CartProvider";
@@ -10,6 +10,11 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Carpintería Sánchez",

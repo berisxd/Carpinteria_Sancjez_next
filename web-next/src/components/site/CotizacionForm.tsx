@@ -105,7 +105,7 @@ export function CotizacionForm() {
       <button
         type="submit"
         disabled={loading}
-        className="rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
+        className="w-full rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
       >
         {loading ? "Enviando..." : "Enviar cotizacion"}
       </button>

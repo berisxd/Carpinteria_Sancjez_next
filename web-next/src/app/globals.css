@@ -198,6 +198,18 @@ body {
   box-shadow: 0 2px 6px rgba(27, 23, 19, 0.05);
 }
 
+/* ── Page wrapper (sticky footer) ──────────────── */
+
+.cs-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.cs-page > main {
+  flex: 1 1 auto;
+}
+
 /* ── Section typography ─────────────────────────── */
 
 .cs-eyebrow {
@@ -209,7 +221,7 @@ body {
 }
 
 .cs-section-title {
-  font-size: 1.85rem;
+  font-size: clamp(1.35rem, 4vw, 1.85rem);
   font-weight: 800;
   color: var(--fg);
   letter-spacing: -0.025em;

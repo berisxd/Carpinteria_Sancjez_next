@@ -37,7 +37,7 @@ export default function CotizacionPage() {
                 <li>Medidas aproximadas del espacio</li>
                 <li>Materiales o estilo preferido</li>
                 <li>Fecha ideal de entrega</li>
-                <li>Imagen de referencia (opcional)</li>
+                <li>Imagen de referencia del mueble o estilo deseado</li>
               </ul>
             </section>
 
